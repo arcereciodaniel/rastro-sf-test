@@ -33,6 +33,7 @@ html[data-theme="dark"]{
       <nav class="nav" id="desktopNav">
         <button data-view="home" class="active"><span class="ico">⌂</span>Inicio</button>
         <button data-view="season"><span class="ico">◫</span>Temporada</button>
+        <button data-view="operation"><span class="ico">▦</span>Operación</button>
         <button data-view="events"><span class="ico">◇</span>Eventos</button>
         <button data-view="movements"><span class="ico">↕</span>Movimientos</button>
         <button data-view="receivables"><span class="ico">$</span>Cobros</button>
@@ -56,6 +57,7 @@ html[data-theme="dark"]{
     <div class="content">
       <section class="view active" id="view-home"></section>
       <section class="view" id="view-season"></section>
+      <section class="view" id="view-operation"></section>
       <section class="view" id="view-events"></section>
       <section class="view" id="view-eventDetail"></section>
       <section class="view" id="view-movements"></section>
@@ -66,6 +68,7 @@ html[data-theme="dark"]{
   <nav class="mobile-nav" id="mobileNav">
     <button data-view="home" class="active"><span>⌂</span><span>Inicio</span></button>
     <button data-view="season"><span>◫</span><span>Temporada</span></button>
+    <button data-view="operation"><span>▦</span><span>Operación</span></button>
     <button data-view="events"><span>◇</span><span>Eventos</span></button>
     <button class="fab" id="mobileRegister">+</button>
     <button data-view="movements"><span>↕</span><span>Movimientos</span></button>
@@ -83,10 +86,17 @@ html[data-theme="dark"]{
           <input id="expenseAmount" type="number" min="0" step="0.01" placeholder="0" required autofocus>
         </div>
         <div class="form-grid">
-          <div class="field"><label>Categoría</label><select id="expenseCategory"><option>Flores</option><option>Personal</option><option>Gasolina</option><option>Transporte</option><option>Materiales</option><option>Servicios</option><option>Alquiler</option><option>Otros</option></select></div>
-          <div class="field"><label>Evento relacionado</label><select id="expenseEvent"></select></div>
+          <div class="field"><label>Categoría</label><select id="expenseCategory"><option>Flores</option><option>Personal</option><option>Hospedaje</option><option>Alimentación</option><option>Gasolina</option><option>Transporte</option><option>Materiales</option><option>Servicios</option><option>Alquiler</option><option>Imprevistos</option><option>Otros</option></select></div>
+          <div class="field"><label>Asignación del gasto</label><select id="expenseAssignmentType"><option value="general">Operación general / sin evento</option><option value="single">Un evento</option><option value="multi">Varios eventos</option></select></div>
+          <div class="field" id="expenseSingleEventField"><label>Evento relacionado</label><select id="expenseEvent"></select></div>
           <div class="field"><label>Medio de pago</label><select id="expenseMethod"><option>Tarjeta</option><option>Transferencia</option><option>Efectivo</option><option>Otro</option></select></div>
           <div class="field"><label>Fecha</label><input id="expenseDate" type="date" required></div>
+        </div>
+        <div id="expenseOperationContext" class="card" style="display:none;margin-bottom:13px;padding:12px"></div>
+        <div id="expenseMultiAllocation" class="card" style="display:none;margin-bottom:13px;padding:12px">
+          <div class="section-title" style="margin-bottom:8px"><div><h2>Distribución entre eventos</h2><div class="kpi-sub">El gasto se registra una sola vez. Aquí defines qué parte corresponde a cada evento.</div></div><button type="button" class="btn secondary small" id="expenseAutoAllocate">Distribuir según presupuesto</button></div>
+          <div id="expenseAllocationRows"></div>
+          <div id="expenseAllocationSummary" class="kpi-sub" style="margin-top:10px"></div>
         </div>
         <div class="field"><label>Nota <span style="font-weight:400">(opcional)</span></label><textarea id="expenseNote" placeholder="Ej. compra urgente de flores importadas"></textarea></div>
         <div class="modal-actions"><button type="button" class="btn secondary" id="savePending">Guardar para clasificar después</button><button class="btn" type="submit">Guardar gasto</button></div>
@@ -166,6 +176,20 @@ const eventBudgets={
  e6:[['Flores',1700,700],['Personal',850,150],['Transporte',300,70],['Materiales',450,40],['Otros',300,60]]
 };
 const eventFiles={e1:['Cotización · Word','Moodboard floral','Notas de diseño'],e2:['Cotización · Word','Checklist logística'],e3:['Cotización · Word','Referencias de color'],e4:['Cotización · Word','Plano de montaje'],e5:['Cotización · Word','Moodboard floral'],e6:['Cotización · Word']};
+const operations=[
+ {id:'op1',name:'Operativo · Guanacaste',start:'2027-03-14',end:'2027-03-28',status:'Planificado',eventIds:['e1','e2','e3','e4'],groups:[
+  {id:'g1',name:'Guanacaste · Equipo principal',eventIds:['e1','e2','e3','e4'],people:12,budgetLines:[['Hospedaje',720,680],['Alimentación',576,420],['Transporte',520,480],['Gasolina',220,190],['Imprevistos',180,75]]}
+ ]},
+ {id:'op2',name:'Operativo · Papagayo / Casa Chameleon',start:'2027-04-09',end:'2027-04-17',status:'Borrador',eventIds:['e5','e6'],groups:[
+  {id:'g2',name:'Guanacaste · Abril',eventIds:['e5','e6'],people:7,budgetLines:[['Hospedaje',480,0],['Alimentación',336,0],['Transporte',420,0],['Gasolina',160,0],['Imprevistos',120,0]]}
+ ]}
+];
+let expenseAllocations=[
+ {movementId:1,eventId:'e1',amountUsd:1620,operationId:'op1',groupId:'g1',budgeted:true},
+ {movementId:3,eventId:'e3',amountUsd:580,operationId:'op1',groupId:'g1',budgeted:true},
+ {movementId:5,eventId:'e4',amountUsd:600,operationId:'op1',groupId:'g1',budgeted:true}
+];
+let currentExpenseContext={operationId:'',groupId:'',eventIds:[]};
 const shared={bank:42200,committed:16280,offReserved:7500,offTarget:32000,receivableTotal:47500,seasonContracted:418500,seasonCollected:184200,seasonCost:208000,operatingSeason:81000};
 
 const baseline={sampleCollected:events.reduce((s,e)=>s+e.collected,0),pendingReceivables:receivables.filter(r=>r.status!=='Pagado').reduce((s,r)=>s+r.amount,0)};
@@ -184,7 +208,15 @@ function fmtOriginal(v,c){return c==='USD'?moneyUSD(v):moneyCRC(v)}
 function pct(v){return `${Math.round(v)}%`}
 function dateLabel(iso){return new Intl.DateTimeFormat('es-CR',{day:'numeric',month:'short',year:'numeric'}).format(new Date(iso+'T12:00:00'))}
 function shortDate(iso){return new Intl.DateTimeFormat('es-CR',{day:'2-digit',month:'short'}).format(new Date(iso+'T12:00:00')).replace('.','')}
+function eventCardDate(iso){return new Intl.DateTimeFormat('es-CR',{day:'2-digit',month:'short',year:'numeric'}).format(new Date(iso+'T12:00:00')).replace('.','').toUpperCase()}
 function eventById(id){return events.find(e=>e.id===id)}
+function operationById(id){return operations.find(o=>o.id===id)}
+function allocationsForMovement(m){const rows=expenseAllocations.filter(a=>a.movementId===m.id);if(rows.length)return rows;if(m.eventId)return [{movementId:m.id,eventId:m.eventId,amountUsd:usd(m.amount,m.currency),operationId:'',groupId:'',budgeted:true}];return []}
+function allocatedToEvent(m,eventId){return allocationsForMovement(m).filter(a=>a.eventId===eventId).reduce((s,a)=>s+a.amountUsd,0)}
+function movementEventLabel(m){const a=allocationsForMovement(m);if(!a.length)return 'Operación general';if(a.length===1)return eventById(a[0].eventId)?.name||'1 evento';return `${a.length} eventos`}
+function budgetForCategory(eventId,category){const row=(eventBudgets[eventId]||[]).find(r=>r[0]===category);return row?Number(row[1]):0}
+function operationBudget(op){return op.groups.reduce((sum,g)=>sum+g.budgetLines.reduce((s,r)=>s+Number(r[1]),0),0)}
+function operationActual(op){return op.groups.reduce((sum,g)=>sum+g.budgetLines.reduce((s,r)=>s+Number(r[2]),0),0)}
 function operatingAvailable(){return shared.bank-shared.committed-shared.offReserved}
 function eventMargin(e){return e.sale-e.costEst}
 function eventActualMargin(e){return e.sale-e.costReal}
@@ -215,7 +247,7 @@ function updateEventFinancialStatus(e){
   else if(e.collected>0){e.financial='Cobro parcial';}
   else{e.financial='Sin cobros';}
 }
-function navTo(view){currentView=view;$$('.view').forEach(v=>v.classList.remove('active'));const el=$(`#view-${view}`);if(el)el.classList.add('active');$$('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));window.scrollTo({top:0,behavior:'instant'});if(view==='home')renderHome();if(view==='season')renderSeason();if(view==='events')renderEvents();if(view==='movements')renderMovements();if(view==='receivables')renderReceivables();if(view==='eventDetail')renderEventDetail()}
+function navTo(view){currentView=view;$$('.view').forEach(v=>v.classList.remove('active'));const el=$(`#view-${view}`);if(el)el.classList.add('active');$$('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));window.scrollTo({top:0,behavior:'instant'});if(view==='home')renderHome();if(view==='season')renderSeason();if(view==='operation')renderOperation();if(view==='events')renderEvents();if(view==='movements')renderMovements();if(view==='receivables')renderReceivables();if(view==='eventDetail')renderEventDetail()}
 
 function renderHome(){
  const available=operatingAvailable(); const next=[...events].sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4); const offPct=shared.offReserved/shared.offTarget*100; const maxBal=Math.max(...months.map(m=>m.balance));
@@ -241,16 +273,27 @@ function renderHome(){
  <div class="card" style="margin-top:14px"><div class="section-title"><div><h2>Saldo de caja proyectado al cierre de cada mes</h2><div class="kpi-sub">Cuánto dinero esperamos tener disponible al finalizar cada mes.</div></div><button class="btn secondary small" data-jump="season">Ver temporada</button></div>${cashChartHTML(months,270)}</div>`;
  $('#calcToggle').onclick=()=>$('#calcBreakdown').classList.toggle('open');bindDynamic();
 }
-function renderSeason(monthKey='2027-03'){
- const selected=months.find(m=>m.key===monthKey)||months[4]; const margin=shared.seasonContracted-shared.seasonCost;
+function renderSeason(monthKey=''){
+ const selected=months.find(m=>m.key===monthKey)||null; const margin=shared.seasonContracted-shared.seasonCost;
+ const filteredEvents=selected?events.filter(e=>e.date.startsWith(selected.key)):events;
  $('#view-season').innerHTML=header('Temporada 2026/2027','Noviembre 2026 — Junio 2027 · Off Season julio — octubre 2027','<button class="btn" id="newEventBtn">+ Evento</button>')+`
  <div class="grid season-summary">${kpi('Eventos confirmados','38')}${kpi('Valor contratado',money(shared.seasonContracted))}${kpi('Cobrado',money(seasonCollectedTotal()))}${kpi('Por cobrar',money(Math.max(0,shared.seasonContracted-seasonCollectedTotal())))}${kpi('Costos proyectados',money(shared.seasonCost))}${kpi('Margen bruto estimado',money(margin))}</div>
- <div class="card"><div class="section-title"><div><h2>Calendario financiero</h2><div class="kpi-sub">Selecciona un mes para ver su resumen.</div></div></div><div class="month-strip">${months.map(m=>`<button class="month-pill ${m.key===selected.key?'active':''} ${m.off?'off':''}" data-month="${m.key}"><strong>${m.label}</strong><span>${m.events} evento${m.events===1?'':'s'}</span><span>${m.off?'Off Season':'Temporada'}</span></button>`).join('')}</div><div class="month-detail">${kpi('Eventos',selected.events)}${kpi('Ingresos esperados',money(selected.income))}${kpi('Costos estimados',money(selected.cost))}${kpi('Saldo proyectado',money(selected.balance))}</div></div>
- <div class="card table-card" style="margin-top:14px"><div class="table-head"><div><strong>Eventos de la temporada</strong><div class="kpi-sub">Vista financiera resumida</div></div><button class="btn secondary small" data-jump="events">Abrir eventos</button></div><div class="table-wrap"><table><thead><tr><th>Evento</th><th>Fecha</th><th>Planner / contacto</th><th class="num">Venta</th><th class="num">Cobrado</th><th class="num">Costo estimado</th><th class="num">Resultado est.</th><th>Estado</th></tr></thead><tbody>${events.map(e=>`<tr data-open-event="${e.id}" style="cursor:pointer"><td><strong>${e.name}</strong><br><small style="color:var(--muted)">${e.place}</small></td><td>${shortDate(e.date)}</td><td>${e.planner}</td><td class="num">${money(e.sale)}</td><td class="num">${money(e.collected)}</td><td class="num">${money(e.costEst)}</td><td class="num"><strong>${money(eventMargin(e))}</strong></td><td><span class="status ${statusClass(e.operational)}">${e.operational}</span></td></tr>`).join('')}</tbody></table></div></div>`;
- $$('.month-pill').forEach(b=>b.onclick=()=>renderSeason(b.dataset.month)); $('#newEventBtn').onclick=()=>showToast('En la siguiente iteración aquí crearíamos un evento nuevo.');bindDynamic();
+ <div class="card"><div class="section-title"><div><h2>Calendario financiero</h2><div class="kpi-sub">Selecciona un mes para filtrar su resumen y los eventos. Sin selección se muestra toda la temporada.</div></div>${selected?'<button class="btn secondary small" id="clearSeasonMonth">Ver toda la temporada</button>':''}</div><div class="month-strip">${months.map(m=>`<button class="month-pill ${selected&&m.key===selected.key?'active':''} ${m.off?'off':''}" data-month="${m.key}"><strong>${m.label}</strong><span>${m.events} evento${m.events===1?'':'s'}</span><span>${m.off?'Off Season':'Temporada'}</span></button>`).join('')}</div>${selected?`<div class="month-detail">${kpi('Eventos',selected.events)}${kpi('Ingresos esperados',money(selected.income))}${kpi('Costos estimados',money(selected.cost))}${kpi('Saldo proyectado',money(selected.balance))}</div>`:'<div class="kpi-sub" style="margin-top:12px">Selecciona un mes si quieres analizarlo de forma individual.</div>'}</div>
+ <div class="card table-card" style="margin-top:14px"><div class="table-head"><div><strong>${selected?`Eventos · ${fullMonthLabel(selected.key)}`:'Eventos de toda la temporada'}</strong><div class="kpi-sub">${filteredEvents.length} evento${filteredEvents.length===1?'':'s'} en esta vista</div></div><button class="btn secondary small" data-jump="events">Abrir eventos</button></div><div class="table-wrap"><table><thead><tr><th>Evento</th><th>Fecha</th><th>Planner / contacto</th><th class="num">Venta</th><th class="num">Cobrado</th><th class="num">Costo estimado</th><th class="num">Resultado est.</th><th>Estado</th></tr></thead><tbody>${filteredEvents.map(e=>`<tr data-open-event="${e.id}" style="cursor:pointer"><td><strong>${e.name}</strong><br><small style="color:var(--muted)">${e.place}</small></td><td>${eventCardDate(e.date)}</td><td>${e.planner}</td><td class="num">${money(e.sale)}</td><td class="num">${money(e.collected)}</td><td class="num">${money(e.costEst)}</td><td class="num"><strong>${money(eventMargin(e))}</strong></td><td><span class="status ${statusClass(e.operational)}">${e.operational}</span></td></tr>`).join('')||'<tr><td colspan="8" class="kpi-sub">No hay eventos registrados para este mes.</td></tr>'}</tbody></table></div></div>`;
+ $$('.month-pill').forEach(b=>b.onclick=()=>renderSeason(selected&&selected.key===b.dataset.month?'':b.dataset.month)); const clear=$('#clearSeasonMonth');if(clear)clear.onclick=()=>renderSeason(''); $('#newEventBtn').onclick=()=>showToast('Creación de eventos preparada para la siguiente iteración.');bindDynamic();
+}
+function renderOperation(){
+ const totalBudget=operations.reduce((s,o)=>s+operationBudget(o),0), totalActual=operations.reduce((s,o)=>s+operationActual(o),0);
+ $('#view-operation').innerHTML=header('Operación','Presupuesto interno para ejecutar días y fines de semana de eventos','<button class="btn" id="newOperationBtn">+ Operativo</button>')+`
+ <div class="grid mini-kpis" style="margin-top:0;margin-bottom:14px">${kpi('Operativos abiertos',operations.length)}${kpi('Presupuesto operativo',money(totalBudget))}${kpi('Gasto registrado',money(totalActual))}${kpi('Disponible operativo',money(Math.max(0,totalBudget-totalActual)),'vs presupuesto actual')}</div>
+ ${operations.map(op=>{const b=operationBudget(op),a=operationActual(op),variance=a-b;return `<div class="card" style="margin-bottom:14px"><div class="section-title"><div><div class="eyebrow">${eventCardDate(op.start)} — ${eventCardDate(op.end)}</div><h2>${op.name}</h2><div class="kpi-sub">${op.eventIds.length} eventos · ${op.groups.length} bloque${op.groups.length===1?'':'s'} operativo${op.groups.length===1?'':'s'}</div></div><span class="status ${op.status==='Planificado'?'blue':'warn'}">${op.status}</span></div>
+ <div class="grid finance-grid">${kpi('Presupuesto',money(b))}${kpi('Real / comprometido',money(a))}${kpi('Disponible',money(Math.max(0,b-a)))}${kpi('Desviación',`${variance>0?'+':''}${money(variance)}`,variance>0?'sobre presupuesto':'dentro del presupuesto')}</div>
+ ${op.groups.map(g=>{const gb=g.budgetLines.reduce((s,r)=>s+r[1],0),ga=g.budgetLines.reduce((s,r)=>s+r[2],0);return `<div class="card table-card" style="margin-top:12px"><div class="table-head"><div><strong>${g.name}</strong><div class="kpi-sub">${g.people} personas · ${g.eventIds.map(id=>eventById(id)?.name).filter(Boolean).join(' · ')}</div></div><button class="btn small" data-operation-expense="${op.id}" data-group="${g.id}">+ Registrar gasto</button></div><div class="table-wrap"><table style="min-width:680px"><thead><tr><th>Categoría</th><th class="num">Presupuesto</th><th class="num">Real</th><th class="num">Disponible / desvío</th></tr></thead><tbody>${g.budgetLines.map(r=>{const d=r[1]-r[2];return `<tr><td>${r[0]}</td><td class="num">${money(r[1])}</td><td class="num">${money(r[2])}</td><td class="num"><strong>${d>=0?money(d):'+'+money(Math.abs(d))}</strong></td></tr>`}).join('')}</tbody></table></div><div class="table-head" style="border-top:1px solid var(--border);border-bottom:0"><strong>Total bloque</strong><div><strong>${money(ga)}</strong> <span class="kpi-sub">de ${money(gb)}</span></div></div></div>`}).join('')}</div>`}).join('')}`;
+ $('#newOperationBtn').onclick=()=>showToast('El alta de nuevos operativos se conectará a base de datos en la siguiente fase.');
+ $$('[data-operation-expense]').forEach(btn=>{btn.onclick=()=>{const op=operationById(btn.dataset.operationExpense),g=op?.groups.find(x=>x.id===btn.dataset.group);openRegister('',{operationId:op?.id||'',groupId:g?.id||'',eventIds:g?.eventIds||[]})}});bindDynamic();
 }
 function renderEvents(){
- $('#view-events').innerHTML=header('Eventos','Economía individual de cada boda y evento','<button class="btn" id="eventAdd">+ Evento</button>')+`<div class="toolbar"><select id="eventViewFilter"><option>Próximos</option><option>Todos</option><option>Cerrados</option></select><select id="eventPlannerFilter"><option>Todos los planners</option><option>Pacific Weddings</option><option>Evergreen Weddings</option></select><input id="eventSearch" placeholder="Buscar evento..." style="min-width:220px"></div><div class="event-cards">${events.map(e=>`<article class="card event-card" data-open-event="${e.id}"><div class="event-card-top"><div><div class="eyebrow">${shortDate(e.date)}</div><h3>${e.name}</h3><div class="place">${e.place}</div></div><span class="status ${statusClass(e.operational)}">${e.operational}</span></div><div class="event-card-stats"><div><label>Venta</label><strong>${money(e.sale)}</strong></div><div><label>Cobrado</label><strong>${pct(e.collected/e.sale*100)}</strong></div><div><label>Margen est.</label><strong>${pct(eventMargin(e)/e.sale*100)}</strong></div></div></article>`).join('')}</div>`;
+ $('#view-events').innerHTML=header('Eventos','Economía individual de cada boda y evento','<button class="btn" id="eventAdd">+ Evento</button>')+`<div class="toolbar"><select id="eventViewFilter"><option>Próximos</option><option>Todos</option><option>Cerrados</option></select><select id="eventPlannerFilter"><option>Todos los planners</option><option>Pacific Weddings</option><option>Evergreen Weddings</option></select><input id="eventSearch" placeholder="Buscar evento..." style="min-width:220px"></div><div class="event-cards">${events.map(e=>`<article class="card event-card" data-open-event="${e.id}"><div class="event-card-top"><div><div class="eyebrow">${eventCardDate(e.date)}</div><h3>${e.name}</h3><div class="place">${e.place}</div></div><span class="status ${statusClass(e.operational)}" style="align-self:flex-start;width:auto;max-width:max-content;flex:0 0 auto">${e.operational}</span></div><div class="event-card-stats"><div><label>Venta</label><strong>${money(e.sale)}</strong></div><div><label>Cobrado</label><strong>${pct(e.collected/e.sale*100)}</strong></div><div><label>Margen est.</label><strong>${pct(eventMargin(e)/e.sale*100)}</strong></div></div></article>`).join('')}</div>`;
  $('#eventAdd').onclick=()=>showToast('Creación de eventos preparada para la siguiente iteración.');bindDynamic();
 }
 function openEvent(id,tab='summary'){selectedEvent=id;eventDetailTab=tab;navTo('eventDetail')}
@@ -265,9 +308,9 @@ function renderEventCobrosTab(e){
  return `<div class="grid finance-grid">${kpi('Cobrado',money(e.collected),'registrado a la fecha')}${kpi('Pendiente',money(Math.max(0,e.sale-e.collected)), 'según venta aprobada')}${kpi('Cuotas pendientes',items.filter(r=>r.status!=='Pagado').length)}${kpi('Próximo cobro', items.find(r=>r.status!=='Pagado')?dateLabel(items.find(r=>r.status!=='Pagado').due):'—', pending?money(pending):'sin saldos')}</div><div class="card table-card"><div class="table-head"><div><strong>Plan de cobros del evento</strong><div class="kpi-sub">Flexible según wedding planner o cliente.</div></div><div style="display:flex;gap:8px"><button class="btn secondary small" id="addExpectedReceivable">+ Cuota esperada</button><button class="btn small" id="addCollectedReceivable">Registrar cobro</button></div></div><div class="table-wrap"><table style="min-width:640px"><thead><tr><th>Concepto</th><th>Fecha esperada</th><th>Estado</th><th class="num">Monto</th><th></th></tr></thead><tbody>${items.map(r=>`<tr><td>${r.concept}</td><td>${dateLabel(r.due)}</td><td><span class="status ${r.status==='Pagado'?'good':'warn'}">${r.status}</span></td><td class="num">${money(r.amount)}</td><td>${r.status!=='Pagado'?`<button class="btn secondary small" data-register-receivable="${r.id}">Registrar</button>`:'<span class="kpi-sub">Aplicado</span>'}</td></tr>`).join('')||'<tr><td colspan="5" class="kpi-sub">No hay cuotas registradas para este evento.</td></tr>'}</tbody></table></div></div>`
 }
 function renderEventGastosTab(e){
- const items=movements.filter(m=>m.kind!=='income' && m.eventId===e.id);
- const direct=items.reduce((s,m)=>s+usd(m.amount,m.currency),0);
- return `<div class="grid finance-grid">${kpi('Gastos directos',money(direct))}${kpi('Costo estimado',money(e.costEst))}${kpi('Diferencia',money(e.costEst-direct), direct>e.costEst?'sobre el estimado':'vs presupuesto')}${kpi('Movimientos asociados',items.length)}</div><div class="card table-card"><div class="table-head"><div><strong>Gastos del evento</strong><div class="kpi-sub">Compras y costos ya vinculados a esta boda.</div></div><button class="btn" id="tabAddExpense">+ Gasto</button></div><div class="table-wrap"><table style="min-width:680px"><thead><tr><th>Fecha</th><th>Categoría</th><th>Descripción</th><th>Medio</th><th>Estado</th><th class="num">Monto</th></tr></thead><tbody>${items.map(m=>`<tr><td>${shortDate(m.date)}</td><td>${m.category}</td><td>${m.description||'—'}</td><td>${m.method}</td><td><span class="status ${m.status==='Completo'?'good':'warn'}">${m.status}</span></td><td class="num"><strong>${fmtOriginal(m.amount,m.currency)}</strong></td></tr>`).join('')||'<tr><td colspan="6" class="kpi-sub">Todavía no hay gastos asociados a este evento.</td></tr>'}</tbody></table></div></div>`
+ const items=movements.filter(m=>m.kind!=='income' && allocatedToEvent(m,e.id)>0);
+ const direct=items.reduce((sum,m)=>sum+allocatedToEvent(m,e.id),0);
+ return `<div class="grid finance-grid">${kpi('Gastos asignados',money(direct))}${kpi('Costo estimado',money(e.costEst))}${kpi('Diferencia',money(e.costEst-direct), direct>e.costEst?'sobre el estimado':'vs presupuesto')}${kpi('Movimientos asociados',items.length)}</div><div class="card table-card"><div class="table-head"><div><strong>Gastos del evento</strong><div class="kpi-sub">Incluye la porción asignada de gastos compartidos.</div></div><button class="btn" id="tabAddExpense">+ Gasto</button></div><div class="table-wrap"><table style="min-width:740px"><thead><tr><th>Fecha</th><th>Categoría</th><th>Descripción</th><th>Tipo</th><th>Medio</th><th class="num">Asignado al evento</th></tr></thead><tbody>${items.map(m=>{const a=allocationsForMovement(m);return `<tr><td>${shortDate(m.date)}</td><td>${m.category}</td><td>${m.description||'—'}</td><td>${a.length>1?'<span class="status blue">Compartido</span>':'<span class="status good">Directo</span>'}</td><td>${m.method}</td><td class="num"><strong>${money(allocatedToEvent(m,e.id))}</strong></td></tr>`}).join('')||'<tr><td colspan="6" class="kpi-sub">Todavía no hay gastos asociados a este evento.</td></tr>'}</tbody></table></div></div>`
 }
 function renderEventBudgetTab(e){
  const budgetRows=eventBudgets[e.id]||[];
@@ -302,7 +345,7 @@ function renderMovements(){
  const dataset=[...movements].reverse().filter(m=>filter==='Todos' || (filter==='Pendientes' ? m.status!=='Completo' : filter==='Gastos' ? m.kind!=='income' : m.kind==='income'));
  const pending=movements.filter(m=>m.status!=='Completo').length;
  const totalMonth=movements.filter(m=>m.kind!=='income').reduce((s,m)=>s+usd(m.amount,m.currency),0);
- $('#view-movements').innerHTML=header('Movimientos','Registro central de ingresos y gastos','<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn secondary" id="movAddIncome">+ Cobro</button><button class="btn" id="movAdd">+ Gasto</button></div>')+`<div class="grid mini-kpis" style="margin-top:0;margin-bottom:14px">${kpi('Movimientos registrados',movements.length)}${kpi('Pendientes',pending,'pueden revisarse después')}${kpi('Gastos marzo',money(totalMonth))}${kpi('Ingresos registrados',money(movements.filter(m=>m.kind==='income').reduce((s,m)=>s+usd(m.amount,m.currency),0)),'cobros registrados')}</div><div class="toolbar"><select id="movementTypeFilter"><option ${filter==='Todos'?'selected':''}>Todos</option><option ${filter==='Pendientes'?'selected':''}>Pendientes</option><option ${filter==='Gastos'?'selected':''}>Gastos</option><option ${filter==='Ingresos'?'selected':''}>Ingresos</option></select><select><option>Marzo 2027</option></select><input placeholder="Buscar movimiento..." style="min-width:220px"></div><div class="card table-card"><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Descripción</th><th>Evento</th><th>Medio</th><th>Estado</th><th class="num">Monto</th></tr></thead><tbody>${dataset.map(m=>`<tr ${m.eventId?`data-open-event="${m.eventId}" style="cursor:pointer"`:''}><td>${shortDate(m.date)}</td><td>${m.kind==='income'?'Cobro':'Gasto'}</td><td>${m.category}</td><td>${m.description||'—'}</td><td>${m.eventId?eventById(m.eventId)?.name:'Sin asignar'}</td><td>${m.method}</td><td><span class="status ${m.status==='Completo'?'good':'warn'}">${m.status}</span></td><td class="num"><strong>${fmtOriginal(m.amount,m.currency)}</strong></td></tr>`).join('')}</tbody></table></div></div>`;
+ $('#view-movements').innerHTML=header('Movimientos','Registro central de ingresos y gastos','<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn secondary" id="movAddIncome">+ Cobro</button><button class="btn" id="movAdd">+ Gasto</button></div>')+`<div class="grid mini-kpis" style="margin-top:0;margin-bottom:14px">${kpi('Movimientos registrados',movements.length)}${kpi('Pendientes',pending,'pueden revisarse después')}${kpi('Gastos marzo',money(totalMonth))}${kpi('Ingresos registrados',money(movements.filter(m=>m.kind==='income').reduce((s,m)=>s+usd(m.amount,m.currency),0)),'cobros registrados')}</div><div class="toolbar"><select id="movementTypeFilter"><option ${filter==='Todos'?'selected':''}>Todos</option><option ${filter==='Pendientes'?'selected':''}>Pendientes</option><option ${filter==='Gastos'?'selected':''}>Gastos</option><option ${filter==='Ingresos'?'selected':''}>Ingresos</option></select><select><option>Marzo 2027</option></select><input placeholder="Buscar movimiento..." style="min-width:220px"></div><div class="card table-card"><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Descripción</th><th>Evento</th><th>Medio</th><th>Estado</th><th class="num">Monto</th></tr></thead><tbody>${dataset.map(m=>`<tr ${allocationsForMovement(m).length===1?`data-open-event="${allocationsForMovement(m)[0].eventId}" style="cursor:pointer"`:''}><td>${shortDate(m.date)}</td><td>${m.kind==='income'?'Cobro':'Gasto'}</td><td>${m.category}</td><td>${m.description||'—'}</td><td>${movementEventLabel(m)}</td><td>${m.method}</td><td><span class="status ${m.status==='Completo'?'good':'warn'}">${m.status}</span></td><td class="num"><strong>${fmtOriginal(m.amount,m.currency)}</strong></td></tr>`).join('')}</tbody></table></div></div>`;
  $('#movAdd').onclick=()=>openRegister();
  $('#movAddIncome').onclick=()=>openReceivableModal();
  $('#movementTypeFilter').onchange=()=>renderMovements();
@@ -316,9 +359,58 @@ function renderReceivables(){
  $$('#view-receivables [data-register-receivable]').forEach(btn=>btn.onclick=()=>{const r=receivables.find(x=>x.id===btn.dataset.registerReceivable);openReceivableModal(r?.eventId||'', btn.dataset.registerReceivable)});
  bindDynamic();
 }
-function openRegister(eventId=''){const modal=$('#registerModal');$('#expenseEvent').innerHTML=`<option value="">Sin evento / decidir después</option>${events.map(e=>`<option value="${e.id}" ${e.id===eventId?'selected':''}>${e.name}</option>`).join('')}`;$('#expenseDate').value=new Date().toISOString().slice(0,10);$('#expenseAmount').value='';$('#expenseNote').value='';$('#expenseCategory').value='Flores';$('#expenseMethod').value='Tarjeta';$('#expenseCurrency').value=displayCurrency==='CRC'?'CRC':'USD';modal.classList.add('open');modal.setAttribute('aria-hidden','false');setTimeout(()=>$('#expenseAmount').focus(),60)}
-function closeRegister(){$('#registerModal').classList.remove('open');$('#registerModal').setAttribute('aria-hidden','true')}
-function saveExpense(pending=false){const amount=Number($('#expenseAmount').value);if(!amount){showToast('Ingresa un monto.');return}const m={id:Date.now(),date:$('#expenseDate').value,category:pending?'Pendiente':$('#expenseCategory').value,description:$('#expenseNote').value||'Gasto registrado',eventId:pending?'':$('#expenseEvent').value,amount,currency:$('#expenseCurrency').value,method:$('#expenseMethod').value,status:pending?'Pendiente':'Completo',kind:'expense'};movements.push(m);shared.bank-=usd(m.amount,m.currency);if(m.eventId){const e=eventById(m.eventId);e.costReal+=usd(m.amount,m.currency);if(e.costReal>e.costEst*0.95 && e.quality==='Alta') e.quality='Media';}closeRegister();showToast(pending?'Guardado para clasificar después':'Gasto guardado');refreshCurrentView()}
+function expenseCandidateEvents(){
+ if(currentExpenseContext.eventIds?.length)return events.filter(e=>currentExpenseContext.eventIds.includes(e.id));
+ return events;
+}
+function renderExpenseAllocationRows(){
+ const box=$('#expenseMultiAllocation'),rows=$('#expenseAllocationRows'); if(!box||!rows)return;
+ const isMulti=$('#expenseAssignmentType').value==='multi'; box.style.display=isMulti?'block':'none';
+ $('#expenseSingleEventField').style.display=$('#expenseAssignmentType').value==='single'?'block':'none';
+ if(!isMulti)return;
+ const category=$('#expenseCategory').value; const candidates=expenseCandidateEvents();
+ rows.innerHTML=candidates.map(e=>`<div style="display:grid;grid-template-columns:28px minmax(0,1fr) 110px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)"><input type="checkbox" class="alloc-check" data-event="${e.id}" ${currentExpenseContext.eventIds?.includes(e.id)?'checked':''}><div><strong style="font-size:.8rem">${e.name}</strong><div class="kpi-sub">Presupuesto ${category}: ${money(budgetForCategory(e.id,category))||'—'}</div></div><input class="alloc-amount" data-event="${e.id}" type="number" min="0" step="0.01" placeholder="0" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px"></div>`).join('');
+ $$('.alloc-check').forEach(c=>c.onchange=()=>{const inp=$(`.alloc-amount[data-event="${c.dataset.event}"]`);if(inp&&!c.checked)inp.value='';updateAllocationSummary()});
+ $$('.alloc-amount').forEach(i=>i.oninput=()=>{const c=$(`.alloc-check[data-event="${i.dataset.event}"]`);if(c&&Number(i.value)>0)c.checked=true;updateAllocationSummary()});
+ updateAllocationSummary();
+}
+function updateAllocationSummary(){
+ const total=Number($('#expenseAmount')?.value||0); const allocated=$$('.alloc-amount').reduce((s,i)=>s+Number(i.value||0),0); const remaining=Math.max(0,total-allocated); const over=Math.max(0,allocated-total);
+ const el=$('#expenseAllocationSummary');if(el)el.innerHTML=`Asignado: <strong>${fmtOriginal(allocated,$('#expenseCurrency').value)}</strong> · Sin asignar: <strong>${fmtOriginal(remaining,$('#expenseCurrency').value)}</strong>${over?` · <span style="color:var(--danger)">Exceso ${fmtOriginal(over,$('#expenseCurrency').value)}</span>`:''}`;
+}
+function autoAllocateExpense(){
+ const total=Number($('#expenseAmount').value||0); if(!total){showToast('Ingresa primero el monto total.');return}
+ const category=$('#expenseCategory').value; const checked=$$('.alloc-check').filter(c=>c.checked); if(!checked.length){showToast('Selecciona al menos un evento.');return}
+ const weights=checked.map(c=>Math.max(0,budgetForCategory(c.dataset.event,category))); const sum=weights.reduce((a,b)=>a+b,0);
+ checked.forEach((c,i)=>{const inp=$(`.alloc-amount[data-event="${c.dataset.event}"]`); const share=sum>0?total*(weights[i]/sum):total/checked.length; inp.value=share.toFixed(2)});updateAllocationSummary();
+}
+function openRegister(eventId='',context={}){
+ currentExpenseContext={operationId:context.operationId||'',groupId:context.groupId||'',eventIds:context.eventIds||[]};
+ const modal=$('#registerModal');$('#expenseEvent').innerHTML=`<option value="">Elegir evento</option>${events.map(e=>`<option value="${e.id}" ${e.id===eventId?'selected':''}>${e.name}</option>`).join('')}`;
+ $('#expenseDate').value=new Date().toISOString().slice(0,10);$('#expenseAmount').value='';$('#expenseNote').value='';$('#expenseCategory').value='Flores';$('#expenseMethod').value='Tarjeta';$('#expenseCurrency').value=displayCurrency==='CRC'?'CRC':'USD';
+ const type=$('#expenseAssignmentType'); type.value=currentExpenseContext.eventIds.length>1?'multi':(eventId?'single':'general');
+ const ctx=$('#expenseOperationContext');if(currentExpenseContext.operationId){const op=operationById(currentExpenseContext.operationId),g=op?.groups.find(x=>x.id===currentExpenseContext.groupId);ctx.style.display='block';ctx.innerHTML=`<div class="kpi-label">Operativo relacionado</div><strong>${op?.name||'Operativo'}</strong><div class="kpi-sub">${g?.name||''}</div>`}else{ctx.style.display='none';ctx.innerHTML=''}
+ renderExpenseAllocationRows();
+ modal.classList.add('open');modal.setAttribute('aria-hidden','false');setTimeout(()=>$('#expenseAmount').focus(),60)
+}
+function closeRegister(){$('#registerModal').classList.remove('open');$('#registerModal').setAttribute('aria-hidden','true');currentExpenseContext={operationId:'',groupId:'',eventIds:[]}}
+function saveExpense(pending=false){
+ const amount=Number($('#expenseAmount').value);if(!amount){showToast('Ingresa un monto.');return}
+ const currency=$('#expenseCurrency').value, assignment=pending?'general':$('#expenseAssignmentType').value;
+ let allocs=[];
+ if(assignment==='single'){
+  const eventId=$('#expenseEvent').value;if(!eventId){showToast('Selecciona el evento.');return}
+  allocs=[{eventId,amountUsd:usd(amount,currency)}];
+ }else if(assignment==='multi'){
+  allocs=$$('.alloc-check').filter(c=>c.checked).map(c=>{const inp=$(`.alloc-amount[data-event="${c.dataset.event}"]`);return {eventId:c.dataset.event,amountOriginal:Number(inp?.value||0)}}).filter(a=>a.amountOriginal>0);
+  const totalAllocated=allocs.reduce((s,a)=>s+a.amountOriginal,0);if(!allocs.length){showToast('Asigna un monto a por lo menos un evento.');return}if(totalAllocated>amount+0.01){showToast('La distribución no puede superar el gasto total.');return}
+  allocs=allocs.map(a=>({eventId:a.eventId,amountUsd:usd(a.amountOriginal,currency)}));
+ }
+ const m={id:Date.now(),date:$('#expenseDate').value,category:pending?'Pendiente':$('#expenseCategory').value,description:$('#expenseNote').value||'Gasto registrado',eventId:allocs.length===1?allocs[0].eventId:'',amount,currency,method:$('#expenseMethod').value,status:pending?'Pendiente':'Completo',kind:'expense'};
+ movements.push(m);shared.bank-=usd(m.amount,m.currency);
+ allocs.forEach(a=>{const budget=budgetForCategory(a.eventId,m.category);expenseAllocations.push({movementId:m.id,eventId:a.eventId,amountUsd:a.amountUsd,operationId:currentExpenseContext.operationId||'',groupId:currentExpenseContext.groupId||'',budgeted:budget>0});const e=eventById(a.eventId);if(e){e.costReal+=a.amountUsd;if(e.costReal>e.costEst*.95&&e.quality==='Alta')e.quality='Media'}});
+ closeRegister();showToast(pending?'Guardado para clasificar después':allocs.length>1?'Gasto guardado y distribuido entre eventos':'Gasto guardado');refreshCurrentView()
+}
 function populateReceivablePending(eventId='', receivableId=''){
  const select=$('#receivablePending');
  const opts=receivables.filter(r=>(!eventId || r.eventId===eventId) && r.status!=='Pagado');
@@ -375,6 +467,7 @@ $('#mobileRegister').onclick=()=>openRegister();
 $('#closeModal').onclick=closeRegister;
 $('#registerModal').addEventListener('click',e=>{if(e.target.id==='registerModal')closeRegister()});
 $('#expenseForm').addEventListener('submit',e=>{e.preventDefault();saveExpense(false)});
+$('#expenseAssignmentType').onchange=()=>renderExpenseAllocationRows();$('#expenseCategory').onchange=()=>renderExpenseAllocationRows();$('#expenseAmount').oninput=()=>updateAllocationSummary();$('#expenseCurrency').onchange=()=>updateAllocationSummary();$('#expenseAutoAllocate').onclick=()=>autoAllocateExpense();
 $('#savePending').onclick=()=>saveExpense(true);
 $('#closeReceivableModal').onclick=closeReceivableModal;
 $('#receivableModal').addEventListener('click',e=>{if(e.target.id==='receivableModal')closeReceivableModal()});
