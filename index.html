@@ -28,10 +28,6 @@ html[data-theme="dark"]{
 <div class="app">
   <aside class="sidebar">
     <div class="brand"><strong>Rastro</strong><small>Custom · S&F</small></div>
-    <div class="workspace-box">
-      <div class="workspace-label">Espacio</div>
-      <select class="workspace-select" id="workspaceSelect"><option value="business" selected>Stylos & Flores</option><option value="personal">Laura · Personal</option></select>
-    </div>
     <div id="businessSidebarMenus">
       <div class="nav-label">Principal</div>
       <nav class="nav" id="desktopNav">
@@ -41,33 +37,6 @@ html[data-theme="dark"]{
         <button data-view="movements"><span class="ico">↕</span>Movimientos</button>
         <button data-view="receivables"><span class="ico">$</span>Cobros</button>
       </nav>
-      <div class="nav-label">Planificación</div>
-      <nav class="nav">
-        <button data-view="budget"><span class="ico">▦</span>Presupuesto</button>
-        <button data-view="projection"><span class="ico">⌁</span>Proyección</button>
-        <button data-view="offseason"><span class="ico">◔</span>Fondo Off Season</button>
-      </nav>
-      <div class="nav-label">Comercial</div>
-      <nav class="nav"><button data-view="quotes"><span class="ico">□</span>Cotizaciones <span class="status blue" style="margin-left:auto">Beta</span></button></nav>
-      <div class="nav-label">Análisis</div>
-      <nav class="nav"><button data-view="reports"><span class="ico">⌗</span>Reportes</button></nav>
-      <div class="nav-label">Administración</div>
-      <nav class="nav"><button data-view="accounts"><span class="ico">◉</span>Cuentas</button><button data-view="settings"><span class="ico">⚙</span>Configuración</button></nav>
-    </div>
-    <div id="personalSidebarMenus" style="display:none">
-      <div class="nav-label">Personal</div>
-      <nav class="nav">
-        <button data-personal-section="home" class="active"><span class="ico">⌂</span>Inicio</button>
-        <button data-personal-section="movements"><span class="ico">↕</span>Movimientos</button>
-        <button data-personal-section="budget"><span class="ico">▦</span>Presupuesto</button>
-        <button data-personal-section="projection"><span class="ico">⌁</span>Proyección</button>
-        <button data-personal-section="funds"><span class="ico">◔</span>Fondos</button>
-      </nav>
-      <div class="nav-label">Administración</div>
-      <nav class="nav">
-        <button data-personal-section="accounts"><span class="ico">◉</span>Cuentas</button>
-        <button data-personal-section="settings"><span class="ico">⚙</span>Configuración</button>
-      </nav>
     </div>
     <div class="sidebar-bottom">
       <div class="managed-card"><strong>Prototipo V1</strong><span>Base demostrativa para Laura y Stylos &amp; Flores</span></div>
@@ -76,7 +45,6 @@ html[data-theme="dark"]{
 
   <main class="main">
     <header class="topbar">
-      <button class="mobile-menu-btn ghost" id="mobileMore">☰</button>
       <strong class="workspace-mini">Stylos & Flores</strong>
       <div class="spacer"></div>
       <select class="season-select" id="seasonSelect"><option>Temporada 2026/2027</option></select>
@@ -92,23 +60,16 @@ html[data-theme="dark"]{
       <section class="view" id="view-eventDetail"></section>
       <section class="view" id="view-movements"></section>
       <section class="view" id="view-receivables"></section>
-      <section class="view" id="view-budget"></section>
-      <section class="view" id="view-projection"></section>
-      <section class="view" id="view-offseason"></section>
-      <section class="view" id="view-quotes"></section>
-      <section class="view" id="view-reports"></section>
-      <section class="view" id="view-accounts"></section>
-      <section class="view" id="view-settings"></section>
-      <section class="view" id="view-personal"></section>
     </div>
   </main>
 
   <nav class="mobile-nav" id="mobileNav">
     <button data-view="home" class="active"><span>⌂</span><span>Inicio</span></button>
+    <button data-view="season"><span>◫</span><span>Temporada</span></button>
     <button data-view="events"><span>◇</span><span>Eventos</span></button>
     <button class="fab" id="mobileRegister">+</button>
     <button data-view="movements"><span>↕</span><span>Movimientos</span></button>
-    <button data-view="offseason"><span>◔</span><span>Off Season</span></button>
+    <button data-view="receivables"><span>$</span><span>Cobros</span></button>
   </nav>
 </div>
 
@@ -151,27 +112,6 @@ html[data-theme="dark"]{
         </div>
         <div class="field"><label>Nota <span style="font-weight:400">(opcional)</span></label><textarea id="receivableNote" placeholder="Ej. segundo pago recibido por planner"></textarea></div>
         <div class="modal-actions"><button type="button" class="btn secondary" id="savePendingReceivable">Guardar pendiente</button><button class="btn" type="submit">Registrar cobro</button></div>
-      </form>
-    </div>
-  </div>
-</div>
-<div class="modal" id="personalMovementModal" aria-hidden="true">
-  <div class="modal-card">
-    <div class="modal-head"><h2 id="personalMovementTitle">Registrar movimiento personal</h2><button class="icon-btn" id="closePersonalMovementModal">×</button></div>
-    <div class="modal-body">
-      <form id="personalMovementForm">
-        <div class="amount-wrap">
-          <select id="personalCurrency"><option value="CRC">CRC ₡</option><option value="USD">USD $</option></select>
-          <input id="personalAmount" type="number" min="0" step="0.01" placeholder="0" required>
-        </div>
-        <div class="form-grid">
-          <div class="field"><label>Tipo</label><select id="personalType"><option value="expense">Gasto</option><option value="income">Ingreso</option></select></div>
-          <div class="field"><label>Categoría</label><select id="personalCategory"></select></div>
-          <div class="field"><label>Cuenta</label><select id="personalAccount"></select></div>
-          <div class="field"><label>Fecha</label><input id="personalDate" type="date" required></div>
-        </div>
-        <div class="field"><label>Nota <span style="font-weight:400">(opcional)</span></label><textarea id="personalNote" placeholder="Ej. supermercado, salario, transporte..."></textarea></div>
-        <div class="modal-actions"><button class="btn" type="submit">Guardar movimiento</button></div>
       </form>
     </div>
   </div>
@@ -227,40 +167,12 @@ const eventBudgets={
 };
 const eventFiles={e1:['Cotización · Word','Moodboard floral','Notas de diseño'],e2:['Cotización · Word','Checklist logística'],e3:['Cotización · Word','Referencias de color'],e4:['Cotización · Word','Plano de montaje'],e5:['Cotización · Word','Moodboard floral'],e6:['Cotización · Word']};
 const shared={bank:42200,committed:16280,offReserved:7500,offTarget:32000,receivableTotal:47500,seasonContracted:418500,seasonCollected:184200,seasonCost:208000,operatingSeason:81000};
-const personalAccounts=[
- {id:'pa1',name:'Cuenta principal',type:'Cuenta bancaria',currency:'CRC',balance:2850000},
- {id:'pa2',name:'Ahorro personal',type:'Ahorro',currency:'CRC',balance:1150000},
- {id:'pa3',name:'Efectivo',type:'Efectivo',currency:'CRC',balance:95000}
-];
-let personalMovements=[
- {id:'pm1',date:'2027-03-01',type:'income',category:'Ingresos',description:'Ingreso principal',accountId:'pa1',amount:1350000,currency:'CRC'},
- {id:'pm2',date:'2027-03-02',type:'expense',category:'Supermercado',description:'Compra semanal',accountId:'pa1',amount:82000,currency:'CRC'},
- {id:'pm3',date:'2027-03-03',type:'expense',category:'Transporte',description:'Gasolina y transporte',accountId:'pa1',amount:46000,currency:'CRC'},
- {id:'pm4',date:'2027-03-04',type:'expense',category:'Ocio',description:'Salida personal',accountId:'pa1',amount:38000,currency:'CRC'},
- {id:'pm5',date:'2027-03-05',type:'expense',category:'Servicios',description:'Servicios personales',accountId:'pa1',amount:27000,currency:'CRC'},
- {id:'pm6',date:'2027-03-06',type:'income',category:'Otros ingresos',description:'Ingreso adicional',accountId:'pa1',amount:180000,currency:'CRC'}
-];
-const personalBudget=[
- ['Supermercado',320000,246000],['Transporte',180000,121000],['Servicios',140000,93000],['Ocio',180000,112000],['Salud y bienestar',120000,68000],['Otros',140000,74000]
-];
-const personalProjection=[
- {label:'MAR',balance:4095000},{label:'ABR',balance:4380000},{label:'MAY',balance:4670000},{label:'JUN',balance:4860000},{label:'JUL',balance:5100000},{label:'AGO',balance:5360000}
-];
-const personalFunds=[
- {id:'pf1',name:'Fondo de emergencia',goal:2400000,current:1650000},
- {id:'pf2',name:'Viajes / metas',goal:1000000,current:420000}
-];
-let personalSection='home';
 
 const baseline={sampleCollected:events.reduce((s,e)=>s+e.collected,0),pendingReceivables:receivables.filter(r=>r.status!=='Pagado').reduce((s,r)=>s+r.amount,0)};
 let selectedEvent='e1';
 let currentView='home';
 let displayCurrency='USD';
 let eventDetailTab='summary';
-let budgetTab='operation';
-let projectionFilter='Temporada';
-let projectionPeriod='all';
-let projectionScenario='base';
 let currentReceivableContext={eventId:'',receivableId:''};
 
 const $=s=>document.querySelector(s); const $$=s=>[...document.querySelectorAll(s)];
@@ -303,8 +215,7 @@ function updateEventFinancialStatus(e){
   else if(e.collected>0){e.financial='Cobro parcial';}
   else{e.financial='Sin cobros';}
 }
-function viewTitle(v){return ({home:'Inicio',season:'Temporada',events:'Eventos',eventDetail:'Evento',movements:'Movimientos',receivables:'Cobros',budget:'Presupuesto',projection:'Proyección',offseason:'Fondo Off Season',quotes:'Cotizaciones',reports:'Reportes',accounts:'Cuentas',settings:'Configuración',personal:'Personal'})[v]||'Rastro'}
-function navTo(view){currentView=view;$$('.view').forEach(v=>v.classList.remove('active'));const el=$(`#view-${view}`);if(el)el.classList.add('active');$$('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));window.scrollTo({top:0,behavior:'instant'});if(view==='home')renderHome();if(view==='season')renderSeason();if(view==='events')renderEvents();if(view==='movements')renderMovements();if(view==='receivables')renderReceivables();if(view==='budget')renderBudget();if(view==='projection')renderProjection();if(view==='offseason')renderOffseason();if(view==='quotes')renderQuotes();if(view==='reports')renderReports();if(view==='accounts')renderAccounts();if(view==='settings')renderSettings();if(view==='personal')renderPersonal();if(view==='eventDetail')renderEventDetail()}
+function navTo(view){currentView=view;$$('.view').forEach(v=>v.classList.remove('active'));const el=$(`#view-${view}`);if(el)el.classList.add('active');$$('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));window.scrollTo({top:0,behavior:'instant'});if(view==='home')renderHome();if(view==='season')renderSeason();if(view==='events')renderEvents();if(view==='movements')renderMovements();if(view==='receivables')renderReceivables();if(view==='eventDetail')renderEventDetail()}
 
 function renderHome(){
  const available=operatingAvailable(); const next=[...events].sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4); const offPct=shared.offReserved/shared.offTarget*100; const maxBal=Math.max(...months.map(m=>m.balance));
@@ -315,7 +226,7 @@ function renderHome(){
    <button class="calc-link" id="calcToggle">Ver cálculo ↓</button>
    <div class="calc-breakdown" id="calcBreakdown"><div class="calc-row"><span>Saldo registrado</span><strong>${money(shared.bank)}</strong></div><div class="calc-row"><span>Comprometido con eventos</span><strong>− ${money(shared.committed)}</strong></div><div class="calc-row"><span>Fondo Off Season reservado</span><strong>− ${money(shared.offReserved)}</strong></div><div class="calc-row total"><span>Disponible operativo</span><strong>${money(available)}</strong></div></div>
   </div>
-  <div class="card"><div class="section-title"><h2>Fondo Off Season</h2><button class="btn secondary small" data-jump="offseason">Ver fondo</button></div><div class="coverage">${pct(offPct)}</div><div class="kpi-sub">${money(shared.offReserved)} de ${money(shared.offTarget)}</div><div class="progress"><span style="width:${Math.min(offPct,100)}%"></span></div><div class="kpi-sub" style="margin-top:11px">Cobertura actual estimada: <strong style="color:var(--text)">0.9 de 4 meses</strong></div></div>
+  <div class="card"><div class="section-title"><h2>Fondo Off Season</h2><button class="btn secondary small" data-jump="season">Ver temporada</button></div><div class="coverage">${pct(offPct)}</div><div class="kpi-sub">${money(shared.offReserved)} de ${money(shared.offTarget)}</div><div class="progress"><span style="width:${Math.min(offPct,100)}%"></span></div><div class="kpi-sub" style="margin-top:11px">Cobertura actual estimada: <strong style="color:var(--text)">0.9 de 4 meses</strong></div></div>
  </div>
  <div class="grid mini-kpis">${kpi('Por cobrar',money(seasonReceivableTotal()),'13 cobros pendientes')}${kpi('Próximos eventos','6','en los próximos 30 días')}${kpi('Comprometido',money(shared.committed),'costos futuros estimados')}${kpi('Temporada contratada',money(shared.seasonContracted),'38 eventos confirmados')}</div>
  <div class="grid section-grid">
@@ -323,11 +234,11 @@ function renderHome(){
    <div class="attention-item" data-jump="movements"><span class="dot warn"></span><div class="meta"><strong>3 gastos por clasificar</strong><small>Se pueden completar después sin detener la operación.</small></div><span>›</span></div>
    <div class="attention-item" data-jump="receivables"><span class="dot warn"></span><div class="meta"><strong>2 cobros próximos</strong><small>Revisar antes de los siguientes eventos.</small></div><span>›</span></div>
    <div class="attention-item" data-open-event="e3"><span class="dot danger"></span><div class="meta"><strong>1 evento cerca del presupuesto</strong><small>Williams Wedding ha consumido 76% del costo previsto.</small></div><span>›</span></div>
-   <div class="attention-item" data-jump="projection"><span class="dot good"></span><div class="meta"><strong>Vista financiera actualizada</strong><small>Revisa rápidamente la proyección de caja de la temporada.</small></div><span>›</span></div>
+   <div class="attention-item" data-jump="season"><span class="dot good"></span><div class="meta"><strong>Vista financiera actualizada</strong><small>Revisa rápidamente el comportamiento financiero de la temporada.</small></div><span>›</span></div>
   </div></div>
   <div class="card"><div class="section-title"><h2>Próximos eventos</h2><button class="btn secondary small" data-jump="events">Ver todos</button></div><div class="event-list">${next.map(e=>{const d=new Date(e.date+'T12:00:00');const mon=d.toLocaleDateString('es-CR',{month:'short'}).replace('.','').toUpperCase();return `<div class="event-row" data-open-event="${e.id}"><div class="event-date"><b>${mon}</b><span>${d.getDate()}</span></div><div class="meta"><strong>${e.name}</strong><small>${e.place}</small></div><div class="event-right"><strong>${Math.round(e.collected/e.sale*100)}% cobrado</strong><small>${money(e.costReal)} gastado</small></div></div>`}).join('')}</div></div>
  </div>
- <div class="card" style="margin-top:14px"><div class="section-title"><div><h2>Saldo de caja proyectado al cierre de cada mes</h2><div class="kpi-sub">Cuánto dinero esperamos tener disponible al finalizar cada mes.</div></div><button class="btn secondary small" data-jump="projection">Ver detalle</button></div>${cashChartHTML(months,270)}</div>`;
+ <div class="card" style="margin-top:14px"><div class="section-title"><div><h2>Saldo de caja proyectado al cierre de cada mes</h2><div class="kpi-sub">Cuánto dinero esperamos tener disponible al finalizar cada mes.</div></div><button class="btn secondary small" data-jump="season">Ver temporada</button></div>${cashChartHTML(months,270)}</div>`;
  $('#calcToggle').onclick=()=>$('#calcBreakdown').classList.toggle('open');bindDynamic();
 }
 function renderSeason(monthKey='2027-03'){
@@ -405,159 +316,6 @@ function renderReceivables(){
  $$('#view-receivables [data-register-receivable]').forEach(btn=>btn.onclick=()=>{const r=receivables.find(x=>x.id===btn.dataset.registerReceivable);openReceivableModal(r?.eventId||'', btn.dataset.registerReceivable)});
  bindDynamic();
 }
-function renderBudget(){
- const opCats=[['Salarios',18000,17400],['Alquiler',12000,12000],['Servicios',5800,5210],['Vehículos',6200,6880],['Gasolina',4800,5120],['Software',2100,2100],['Administración',5500,4960]];
- const eventRows=events.map(e=>[e.name,e.costEst,e.costReal]);
- $('#view-budget').innerHTML=header('Presupuesto','Operación empresarial + presupuesto por evento')+`<div class="tabs"><button class="tab ${budgetTab==='operation'?'active':''}" data-budget-tab="operation">Operación</button><button class="tab ${budgetTab==='events'?'active':''}" data-budget-tab="events">Eventos</button></div>${budgetTab==='operation'?`<div class="card table-card"><div class="table-head"><div><strong>Presupuesto operativo · Temporada 2026/2027</strong><div class="kpi-sub">Datos demostrativos</div></div></div><div class="table-wrap"><table><thead><tr><th>Categoría</th><th class="num">Presupuesto</th><th class="num">Real / comprometido</th><th class="num">Diferencia</th></tr></thead><tbody>${opCats.map(c=>`<tr><td>${c[0]}</td><td class="num">${money(c[1])}</td><td class="num">${money(c[2])}</td><td class="num ${c[2]>c[1]?'variance plus':'variance minus'}">${money(c[1]-c[2])}</td></tr>`).join('')}</tbody></table></div></div>`:`<div class="card table-card"><div class="table-head"><div><strong>Presupuesto por evento</strong><div class="kpi-sub">Comparativo rápido de costo estimado vs. costo registrado</div></div></div><div class="table-wrap"><table><thead><tr><th>Evento</th><th class="num">Estimado</th><th class="num">Real</th><th class="num">Diferencia</th></tr></thead><tbody>${eventRows.map(r=>{const d=r[2]-r[1];return `<tr data-open-event="${events.find(e=>e.name===r[0]).id}" style="cursor:pointer"><td>${r[0]}</td><td class="num">${money(r[1])}</td><td class="num">${money(r[2])}</td><td class="num variance ${d>0?'plus':'minus'}">${d>0?'+':''}${money(d)}</td></tr>`}).join('')}</tbody></table></div></div>`}`;
- $$('#view-budget [data-budget-tab]').forEach(btn=>btn.onclick=()=>{budgetTab=btn.dataset.budgetTab;renderBudget()});
- bindDynamic();
-}
-function scenarioFactor(){return projectionScenario==='conservative'?0.92:projectionScenario==='optimistic'?1.08:1}
-function projectionLabel(){return projectionScenario==='conservative'?'Escenario conservador':projectionScenario==='optimistic'?'Escenario optimista':'Escenario base'}
-function buildProjectionOptions(filter){
- if(filter==='Mes') return months.map(m=>({value:m.key,label:`${m.label} ${m.key.slice(0,4)}`}));
- if(filter==='Trimestre') return [
-  {value:'t1',label:'T1 · Nov–Ene', months:['2026-11','2026-12','2027-01']},
-  {value:'t2',label:'T2 · Feb–Abr', months:['2027-02','2027-03','2027-04']},
-  {value:'t3',label:'T3 · May–Jul', months:['2027-05','2027-06','2027-07']},
-  {value:'t4',label:'T4 · Ago–Oct', months:['2027-08','2027-09','2027-10']}
- ];
- if(filter==='Semestre') return [
-  {value:'s1',label:'S1 · Nov–Abr', months:['2026-11','2026-12','2027-01','2027-02','2027-03','2027-04']},
-  {value:'s2',label:'S2 · May–Oct', months:['2027-05','2027-06','2027-07','2027-08','2027-09','2027-10']}
- ];
- return [{value:'all',label:filter==='12 meses'?'12 meses':'Temporada completa', months:months.map(m=>m.key)}];
-}
-function projectionDataset(){
- const options=buildProjectionOptions(projectionFilter);
- if(!options.find(o=>o.value===projectionPeriod)) projectionPeriod=options[0].value;
- const option=options.find(o=>o.value===projectionPeriod) || options[0];
- let selectedMonths=[];
- if(projectionFilter==='Mes'){
-   const m=months.find(x=>x.key===projectionPeriod) || months[4];
-   selectedMonths=[{...m}];
- } else {
-   const keys=option.months || months.map(m=>m.key);
-   selectedMonths=months.filter(m=>keys.includes(m.key)).map(m=>({...m}));
- }
- const factor=scenarioFactor();
- return selectedMonths.map(m=>({...m,balance:Math.round(m.balance*factor),income:Math.round(m.income*(projectionScenario==='conservative'?0.95:projectionScenario==='optimistic'?1.05:1)),cost:Math.round(m.cost*(projectionScenario==='conservative'?1.04:projectionScenario==='optimistic'?0.97:1))}));
-}
-function renderProjection(){
- const options=buildProjectionOptions(projectionFilter);
- if(!options.find(o=>o.value===projectionPeriod)) projectionPeriod=options[0].value;
- const dataset=projectionDataset();
- const max=Math.max(...dataset.map(m=>m.balance));
- const incomeSum=dataset.reduce((s,m)=>s+m.income,0);
- const costSum=dataset.reduce((s,m)=>s+m.cost,0);
- const operational=Math.round(shared.operatingSeason*(dataset.length/8));
- const toolbarPeriod=(projectionFilter==='Temporada'||projectionFilter==='12 meses')?'' : `<select id="projectionPeriod">${options.map(o=>`<option value="${o.value}" ${o.value===projectionPeriod?'selected':''}>${o.label}</option>`).join('')}</select>`;
- $('#view-projection').innerHTML=header('Proyección de caja','Saldo real + cobros − eventos − operación − reservas')+`<div class="toolbar"><select id="projectionFilter"><option ${projectionFilter==='Temporada'?'selected':''}>Temporada</option><option ${projectionFilter==='Mes'?'selected':''}>Mes</option><option ${projectionFilter==='Trimestre'?'selected':''}>Trimestre</option><option ${projectionFilter==='Semestre'?'selected':''}>Semestre</option><option ${projectionFilter==='12 meses'?'selected':''}>12 meses</option></select>${toolbarPeriod}<button class="btn secondary" id="scenarioBtn">${projectionLabel()}</button></div><div class="card"><div class="section-title"><div><h2>Saldo de caja proyectado al cierre de cada mes</h2><div class="kpi-sub">${projectionFilter==='Temporada'?'La temporada completa en una sola lectura':projectionFilter==='Mes'?'Lectura puntual por mes':'Vista resumida de la proyección de caja'}</div></div></div>${cashChartHTML(dataset,350)}</div><div class="grid month-detail" style="margin-top:14px">${kpi('Saldo real actual',money(shared.bank))}${kpi('Cobros confirmados',money(incomeSum))}${kpi('Costos de eventos',`− ${money(costSum)}`)}${kpi('Operación proyectada',`− ${money(operational)}`)}</div>`;
- $('#projectionFilter').onchange=e=>{projectionFilter=e.target.value;projectionPeriod='all';renderProjection()};
- const pp=$('#projectionPeriod'); if(pp) pp.onchange=e=>{projectionPeriod=e.target.value;renderProjection()};
- $('#scenarioBtn').onclick=()=>{projectionScenario=projectionScenario==='base'?'conservative':projectionScenario==='conservative'?'optimistic':'base';renderProjection()};
-}
-function renderOffseason(){const p=shared.offReserved/shared.offTarget*100;const remaining=shared.offTarget-shared.offReserved;const contribution=Math.ceil(remaining/8/10)*10;$('#view-offseason').innerHTML=header('Fondo Off Season','Julio — Octubre 2027 · reserva estratégica de operación')+`<div class="grid offseason-grid"><div class="card"><div class="ring"><div class="ring-inner"><strong>${pct(p)}</strong><span>completado</span></div></div><div style="text-align:center"><div class="kpi-value">${money(shared.offReserved)}</div><div class="kpi-sub">de ${money(shared.offTarget)} objetivo</div></div></div><div class="card"><div class="kpi-label">Cobertura actual</div><div class="coverage">0.9 meses</div><div class="kpi-sub">de 4 meses de Off Season</div><div style="margin-top:22px;padding-top:18px;border-top:1px solid var(--border)"><div class="kpi-label">Aporte sugerido</div><div class="kpi-value">${money(contribution)} / mes</div><div class="kpi-sub">Durante los próximos 8 meses para completar el objetivo antes de julio.</div></div></div></div><div class="grid offseason-grid" style="margin-top:14px"><div class="card"><div class="section-title"><h2>Cómo calculamos el objetivo</h2></div>${[['Salarios esenciales',15000],['Alquiler',6500],['Servicios',2800],['Vehículos y mantenimiento',3100],['Software y administración',2100],['Otros esenciales',2500]].map(r=>`<div class="assumption-row"><span>${r[0]}</span><strong>${money(r[1])}</strong></div>`).join('')}<div class="assumption-row" style="font-weight:800"><span>Objetivo estimado</span><strong>${money(shared.offTarget)}</strong></div></div><div class="card"><div class="section-title"><h2>Lectura para Laura</h2></div><p style="font-size:1.05rem;line-height:1.6;margin-top:4px">Con la reserva actual, Stylos & Flores todavía necesita <strong>${money(remaining)}</strong> para cubrir completamente los cuatro meses de Off Season.</p><p class="kpi-sub">Rastro recalcularía esta recomendación cuando cambien el presupuesto, los eventos confirmados o los ingresos conservadores esperados.</p><button class="btn" style="margin-top:12px" data-jump="projection">Ver impacto en proyección</button></div></div>`;bindDynamic()}
-function renderQuotes(){const q=[['Smith Celebration','Pacific Weddings',18500,'Aprobada'],['Jones Wedding','Blue Mango Weddings',12700,'En negociación'],['Taylor Wedding','Cliente final',22100,'Enviada']];$('#view-quotes').innerHTML=header('Cotizaciones · Beta','La cotización sigue pudiendo vivir en Word; Rastro captura su dimensión financiera','<button class="btn" id="newQuoteBtn">+ Registrar cotización</button>')+`<div class="card table-card"><div class="table-wrap"><table><thead><tr><th>Evento</th><th>Planner / cliente</th><th class="num">Total cotizado</th><th>Estado</th><th></th></tr></thead><tbody>${q.map(r=>`<tr><td><strong>${r[0]}</strong></td><td>${r[1]}</td><td class="num">${money(r[2])}</td><td><span class="status ${r[3]==='Aprobada'?'good':'blue'}">${r[3]}</span></td><td><button class="btn secondary small" data-quote-action="Ver">Ver</button></td></tr>`).join('')}</tbody></table></div></div>`;
- $('#newQuoteBtn').onclick=()=>showToast('La creación de cotizaciones se habilitará en una siguiente fase.');
- $$('#view-quotes [data-quote-action]').forEach(btn=>btn.onclick=()=>showToast('En la siguiente versión aquí abriríamos el detalle de la cotización.'))
-}
-function renderReports(){$('#view-reports').innerHTML=header('Reportes','Análisis simple para tomar mejores decisiones')+`<div class="grid event-cards">${[['Rentabilidad por evento','Venta, costo, margen y desviaciones.'],['Resultado de temporada','Contratado, cobrado, costos y resultado estimado.'],['Gastos','Por categoría, mes y evento.'],['Flujo de caja','Real vs. proyectado.'],['Off Season','Cobertura, objetivo y aportes.']].map(r=>`<div class="card"><h3 style="margin:0 0 6px;font-size:.95rem">${r[0]}</h3><div class="kpi-sub">${r[1]}</div><button class="btn secondary small" style="margin-top:12px" data-report="${r[0]}">Abrir reporte</button></div>`).join('')}</div>`;$$('[data-report]').forEach(btn=>btn.onclick=()=>showToast(`La vista de “${btn.dataset.report}” se detallará en la siguiente iteración.`))}
-function renderAccounts(){$('#view-accounts').innerHTML=header('Cuentas','Representaciones financieras; nunca credenciales bancarias','<button class="btn" id="addAccountBtn">+ Cuenta</button>')+`<div class="event-cards">${[['Cuenta operativa USD','USD',24700],['Cuenta operativa CRC','CRC',7100000],['Tarjeta empresarial','USD',0],['Efectivo / caja','CRC',185000]].map(r=>`<div class="card"><div class="kpi-label">${r[0]}</div><div class="kpi-value">${r[1]==='USD'?moneyUSD(r[2]):moneyCRC(r[2])}</div><div class="kpi-sub">${r[1]}</div></div>`).join('')}</div>`;$('#addAccountBtn').onclick=()=>showToast('La creación de cuentas se habilitará en una siguiente fase.')}
-function renderSettings(){$('#view-settings').innerHTML=header('Configuración','Temporada, categorías, fondos y preferencias')+`<div class="grid section-grid"><div class="card"><h2 style="font-size:1rem;margin-top:0">Empresa</h2><div class="field"><label>Nombre</label><input value="Stylos & Flores"></div><div class="field"><label>Moneda principal</label><select><option>USD</option><option>CRC</option></select></div></div><div class="card"><h2 style="font-size:1rem;margin-top:0">Temporada</h2><div class="form-grid"><div class="field"><label>Inicio</label><select><option>Noviembre</option></select></div><div class="field"><label>Final</label><select><option>Junio</option></select></div><div class="field"><label>Off Season inicia</label><select><option>Julio</option></select></div><div class="field"><label>Off Season finaliza</label><select><option>Octubre</option></select></div></div></div></div>`}
-function pMoney(vCRC){return displayCurrency==='CRC'?moneyCRC(vCRC):moneyUSD(vCRC/FX)}
-function personalTotalBalance(){return personalAccounts.reduce((s,a)=>s+(a.currency==='CRC'?a.balance:a.balance*FX),0)}
-function personalMonthExpense(){return personalMovements.filter(m=>m.type==='expense').reduce((s,m)=>s+(m.currency==='CRC'?m.amount:m.amount*FX),0)}
-function personalMonthIncome(){return personalMovements.filter(m=>m.type==='income').reduce((s,m)=>s+(m.currency==='CRC'?m.amount:m.amount*FX),0)}
-function personalBudgetTotal(){return personalBudget.reduce((s,r)=>s+r[1],0)}
-function personalBudgetSpent(){return personalBudget.reduce((s,r)=>s+r[2],0)}
-function setWorkspace(mode){
- const personal=mode==='personal';
- $('#workspaceSelect').value=mode;
- $('#businessSidebarMenus').style.display=personal?'none':'block';
- $('#personalSidebarMenus').style.display=personal?'block':'none';
- $('.workspace-mini').textContent=personal?'Laura · Personal':'Stylos & Flores';
- $('#seasonSelect').style.display=personal?'none':'';
- $('#registerBtn').textContent=personal?'+ Movimiento':'+ Registrar';
- if(personal){
-   $('#mobileNav').innerHTML=`<button data-personal-mobile="home"><span>⌂</span><span>Inicio</span></button><button data-personal-mobile="budget"><span>▦</span><span>Presupuesto</span></button><button class="fab" id="mobilePersonalRegister">+</button><button data-personal-mobile="movements"><span>↕</span><span>Movimientos</span></button><button data-personal-mobile="funds"><span>◔</span><span>Fondos</span></button>`;
-   $$('#mobileNav [data-personal-mobile]').forEach(btn=>btn.onclick=()=>{personalSection=btn.dataset.personalMobile;renderPersonal()});
-   $('#mobilePersonalRegister').onclick=()=>openPersonalMovement();
-   navTo('personal');
- }else{
-   $('#mobileNav').innerHTML=`<button data-view="home" class="active"><span>⌂</span><span>Inicio</span></button><button data-view="events"><span>◇</span><span>Eventos</span></button><button class="fab" id="mobileRegister">+</button><button data-view="movements"><span>↕</span><span>Movimientos</span></button><button data-view="offseason"><span>◔</span><span>Off Season</span></button>`;
-   $$('#mobileNav [data-view]').forEach(b=>b.addEventListener('click',()=>navTo(b.dataset.view)));
-   $('#mobileRegister').onclick=()=>openRegister();
-   navTo('home');
- }
-}
-function personalNavButton(section,label,ico){return `<button data-personal-section="${section}" class="${personalSection===section?'active':''}"><span class="ico">${ico}</span>${label}</button>`}
-function renderPersonal(){
- $$('.view').forEach(v=>v.classList.remove('active')); $('#view-personal').classList.add('active');
- const sectionTitles={home:['Laura · Personal','Tu panorama financiero personal, separado de Stylos & Flores'],movements:['Movimientos personales','Ingresos y gastos personales'],budget:['Presupuesto personal','Plan mensual por categorías'],projection:['Proyección personal','Cómo puede evolucionar tu saldo'],funds:['Fondos y metas','Reservas personales separadas'],accounts:['Cuentas personales','Saldos de demostración por cuenta'],settings:['Configuración personal','Preferencias del espacio personal']};
- const [title,sub]=sectionTitles[personalSection]||sectionTitles.home;
- let body='';
- if(personalSection==='home'){
-   const total=personalTotalBalance(), exp=personalMonthExpense(), inc=personalMonthIncome(), available=Math.max(0,personalBudgetTotal()-personalBudgetSpent());
-   const max=Math.max(...personalProjection.map(x=>x.balance));
-   body=`${header(title,sub,'<button class="btn" id="personalQuickAdd">+ Movimiento</button>')}
-   <div class="grid hero-grid"><div class="card hero-card"><div class="kpi-label">Saldo personal registrado</div><div class="hero-value">${pMoney(total)}</div><div class="hero-note">Suma de tus cuentas personales de demostración.</div><button class="calc-link" data-personal-jump="accounts">Ver cuentas →</button></div><div class="card"><div class="section-title"><h2>Presupuesto del mes</h2><button class="btn secondary small" data-personal-jump="budget">Ver presupuesto</button></div><div class="coverage">${pct(personalBudgetSpent()/personalBudgetTotal()*100)}</div><div class="kpi-sub">${pMoney(personalBudgetSpent())} de ${pMoney(personalBudgetTotal())} utilizado</div><div class="progress"><span style="width:${Math.min(100,personalBudgetSpent()/personalBudgetTotal()*100)}%"></span></div><div class="kpi-sub" style="margin-top:11px">Disponible presupuestario: <strong style="color:var(--text)">${pMoney(available)}</strong></div></div></div>
-   <div class="grid mini-kpis">${kpi('Ingresos del mes',pMoney(inc))}${kpi('Gastos del mes',pMoney(exp))}${kpi('Ahorro neto demo',pMoney(Math.max(0,inc-exp)))}${kpi('Fondos acumulados',pMoney(personalFunds.reduce((s,f)=>s+f.current,0)))}</div>
-   <div class="grid section-grid"><div class="card"><div class="section-title"><h2>Últimos movimientos</h2><button class="btn secondary small" data-personal-jump="movements">Ver todos</button></div><div class="attention-list">${[...personalMovements].reverse().slice(0,5).map(m=>`<div class="attention-item"><span class="dot ${m.type==='income'?'good':'warn'}"></span><div class="meta"><strong>${m.description}</strong><small>${m.category} · ${shortDate(m.date)}</small></div><strong>${m.type==='income'?'+':'−'} ${pMoney(m.currency==='CRC'?m.amount:m.amount*FX)}</strong></div>`).join('')}</div></div><div class="card"><div class="section-title"><h2>Fondos</h2><button class="btn secondary small" data-personal-jump="funds">Ver fondos</button></div>${personalFunds.map(f=>`<div style="margin-bottom:16px"><div class="calc-row"><span>${f.name}</span><strong>${pMoney(f.current)}</strong></div><div class="progress"><span style="width:${Math.min(100,f.current/f.goal*100)}%"></span></div><div class="kpi-sub" style="margin-top:5px">${pct(f.current/f.goal*100)} de ${pMoney(f.goal)}</div></div>`).join('')}</div></div>
-   <div class="card" style="margin-top:14px"><div class="section-title"><div><h2>Proyección personal</h2><div class="kpi-sub">Vista de demostración a seis meses</div></div><button class="btn secondary small" data-personal-jump="projection">Ver detalle</button></div><div class="cash-chart">${personalProjection.map(m=>`<div class="bar-wrap"><small>${pMoney(m.balance).replace(/\$|₡/,'')}</small><div class="bar" style="height:${Math.max(18,m.balance/max*82)}%"></div><label>${m.label}</label></div>`).join('')}</div></div>`;
- }
- if(personalSection==='movements'){
-   body=`${header(title,sub,'<button class="btn" id="personalQuickAdd">+ Movimiento</button>')}<div class="grid mini-kpis" style="margin-top:0;margin-bottom:14px">${kpi('Ingresos',pMoney(personalMonthIncome()))}${kpi('Gastos',pMoney(personalMonthExpense()))}${kpi('Balance del mes',pMoney(personalMonthIncome()-personalMonthExpense()))}${kpi('Movimientos',personalMovements.length)}</div><div class="card table-card"><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Descripción</th><th>Cuenta</th><th class="num">Monto</th></tr></thead><tbody>${[...personalMovements].reverse().map(m=>`<tr><td>${shortDate(m.date)}</td><td><span class="status ${m.type==='income'?'good':'warn'}">${m.type==='income'?'Ingreso':'Gasto'}</span></td><td>${m.category}</td><td>${m.description}</td><td>${personalAccounts.find(a=>a.id===m.accountId)?.name||'—'}</td><td class="num"><strong>${m.type==='income'?'+':'−'} ${fmtOriginal(m.amount,m.currency)}</strong></td></tr>`).join('')}</tbody></table></div></div>`;
- }
- if(personalSection==='budget'){
-   const total=personalBudgetTotal(), spent=personalBudgetSpent();
-   body=`${header(title,sub,'<button class="btn secondary" id="editPersonalBudget">Editar presupuesto</button>')}<div class="grid mini-kpis" style="margin-top:0;margin-bottom:14px">${kpi('Presupuesto mensual',pMoney(total))}${kpi('Utilizado',pMoney(spent))}${kpi('Disponible',pMoney(total-spent))}${kpi('Ejecución',pct(spent/total*100))}</div><div class="card table-card"><div class="table-wrap"><table><thead><tr><th>Categoría</th><th class="num">Presupuesto</th><th class="num">Real</th><th class="num">Disponible</th><th>Ejecución</th></tr></thead><tbody>${personalBudget.map(r=>`<tr><td>${r[0]}</td><td class="num">${pMoney(r[1])}</td><td class="num">${pMoney(r[2])}</td><td class="num">${pMoney(Math.max(0,r[1]-r[2]))}</td><td><div class="progress" style="min-width:120px"><span style="width:${Math.min(100,r[2]/r[1]*100)}%"></span></div><small class="kpi-sub">${pct(r[2]/r[1]*100)}</small></td></tr>`).join('')}</tbody></table></div></div>`;
- }
- if(personalSection==='projection'){
-   const max=Math.max(...personalProjection.map(x=>x.balance));
-   body=`${header(title,sub)}<div class="toolbar"><select id="personalProjectionFilter"><option>6 meses</option><option>3 meses</option></select><button class="btn secondary" id="personalScenarioBtn">Escenario base</button></div><div class="card"><div class="section-title"><div><h2>Saldo personal proyectado</h2><div class="kpi-sub">Basado en saldo actual, ingresos y presupuesto de demostración</div></div></div><div class="cash-chart" style="height:330px">${personalProjection.map(m=>`<div class="bar-wrap"><small>${pMoney(m.balance).replace(/\$|₡/,'')}</small><div class="bar" style="height:${Math.max(15,m.balance/max*86)}%"></div><label>${m.label}</label></div>`).join('')}</div></div><div class="grid month-detail" style="margin-top:14px">${kpi('Saldo actual',pMoney(personalTotalBalance()))}${kpi('Ingresos mensuales demo',pMoney(personalMonthIncome()))}${kpi('Presupuesto mensual',`− ${pMoney(personalBudgetTotal())}`)}${kpi('Fondos separados',pMoney(personalFunds.reduce((s,f)=>s+f.current,0)))}</div>`;
- }
- if(personalSection==='funds'){
-   body=`${header(title,sub,'<button class="btn" id="addPersonalFund">+ Fondo</button>')}<div class="event-cards">${personalFunds.map(f=>`<div class="card"><div class="kpi-label">${f.name}</div><div class="kpi-value">${pMoney(f.current)}</div><div class="kpi-sub">Objetivo ${pMoney(f.goal)}</div><div class="progress"><span style="width:${Math.min(100,f.current/f.goal*100)}%"></span></div><div class="kpi-sub" style="margin-top:8px">${pct(f.current/f.goal*100)} completado · faltan ${pMoney(Math.max(0,f.goal-f.current))}</div></div>`).join('')}</div>`;
- }
- if(personalSection==='accounts'){
-   body=`${header(title,sub,'<button class="btn" id="addPersonalAccount">+ Cuenta</button>')}<div class="event-cards">${personalAccounts.map(a=>`<div class="card"><div class="kpi-label">${a.name}</div><div class="kpi-value">${a.currency==='CRC'?moneyCRC(a.balance):moneyUSD(a.balance)}</div><div class="kpi-sub">${a.type} · ${a.currency}</div></div>`).join('')}</div>`;
- }
- if(personalSection==='settings'){
-   body=`${header(title,sub)}<div class="grid section-grid"><div class="card"><h2 style="font-size:1rem;margin-top:0">Preferencias</h2><div class="field"><label>Moneda principal</label><select><option>CRC</option><option>USD</option></select></div><div class="field"><label>Periodo de presupuesto</label><select><option>Mensual</option><option>Quincenal</option></select></div></div><div class="card"><h2 style="font-size:1rem;margin-top:0">Separación financiera</h2><p class="kpi-sub">Este espacio mantiene los movimientos personales separados de Stylos & Flores. En una fase posterior podemos habilitar transferencias o reembolsos entre ambos espacios sin mezclar sus saldos.</p><button class="btn secondary small" id="personalRelationInfo">Ver propuesta futura</button></div></div>`;
- }
- $('#view-personal').innerHTML=body;
- bindPersonalDynamic();
-}
-function bindPersonalDynamic(){
- $$('[data-personal-jump]').forEach(el=>el.onclick=()=>{personalSection=el.dataset.personalJump;renderPersonal()});
- $$('#personalSidebarMenus [data-personal-section]').forEach(btn=>btn.classList.toggle('active',btn.dataset.personalSection===personalSection));
- const add=$('#personalQuickAdd'); if(add)add.onclick=()=>openPersonalMovement();
- const edit=$('#editPersonalBudget'); if(edit)edit.onclick=()=>showToast('La edición detallada del presupuesto se habilitará en la siguiente iteración.');
- const scen=$('#personalScenarioBtn'); if(scen)scen.onclick=()=>showToast('Podemos agregar escenarios personales conservador/base/optimista en la siguiente iteración.');
- const addFund=$('#addPersonalFund'); if(addFund)addFund.onclick=()=>showToast('La creación de fondos se habilitará en la siguiente iteración.');
- const addAcc=$('#addPersonalAccount'); if(addAcc)addAcc.onclick=()=>showToast('La creación de cuentas se habilitará en la siguiente iteración.');
- const rel=$('#personalRelationInfo'); if(rel)rel.onclick=()=>showToast('Propuesta futura: aportes, retiros y reembolsos entre Laura y S&F sin mezclar los espacios.');
-}
-function updatePersonalCategoryOptions(){
- const type=$('#personalType').value;
- const cats=type==='income'?['Ingresos','Otros ingresos','Reembolso','Venta personal']:['Supermercado','Transporte','Servicios','Ocio','Salud y bienestar','Compras','Otros'];
- $('#personalCategory').innerHTML=cats.map(c=>`<option>${c}</option>`).join('');
-}
-function openPersonalMovement(type='expense'){
- $('#personalType').value=type; updatePersonalCategoryOptions();
- $('#personalAccount').innerHTML=personalAccounts.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
- $('#personalCurrency').value='CRC'; $('#personalAmount').value=''; $('#personalDate').value=new Date().toISOString().slice(0,10); $('#personalNote').value='';
- $('#personalMovementModal').classList.add('open'); $('#personalMovementModal').setAttribute('aria-hidden','false'); setTimeout(()=>$('#personalAmount').focus(),50);
-}
-function closePersonalMovement(){$('#personalMovementModal').classList.remove('open');$('#personalMovementModal').setAttribute('aria-hidden','true')}
-function savePersonalMovement(){
- const amount=Number($('#personalAmount').value); if(!amount){showToast('Ingresa un monto.');return}
- const currency=$('#personalCurrency').value, accountId=$('#personalAccount').value, type=$('#personalType').value;
- personalMovements.push({id:'pm'+Date.now(),date:$('#personalDate').value,type,category:$('#personalCategory').value,description:$('#personalNote').value||($('#personalCategory').value),accountId,amount,currency});
- const acc=personalAccounts.find(a=>a.id===accountId); if(acc){let deltaCRC=currency==='CRC'?amount:amount*FX;if(acc.currency==='CRC')acc.balance+=type==='income'?deltaCRC:-deltaCRC;else acc.balance+=type==='income'?amount:-amount}
- closePersonalMovement(); showToast(type==='income'?'Ingreso personal guardado':'Gasto personal guardado'); renderPersonal();
-}
 function openRegister(eventId=''){const modal=$('#registerModal');$('#expenseEvent').innerHTML=`<option value="">Sin evento / decidir después</option>${events.map(e=>`<option value="${e.id}" ${e.id===eventId?'selected':''}>${e.name}</option>`).join('')}`;$('#expenseDate').value=new Date().toISOString().slice(0,10);$('#expenseAmount').value='';$('#expenseNote').value='';$('#expenseCategory').value='Flores';$('#expenseMethod').value='Tarjeta';$('#expenseCurrency').value=displayCurrency==='CRC'?'CRC':'USD';modal.classList.add('open');modal.setAttribute('aria-hidden','false');setTimeout(()=>$('#expenseAmount').focus(),60)}
 function closeRegister(){$('#registerModal').classList.remove('open');$('#registerModal').setAttribute('aria-hidden','true')}
 function saveExpense(pending=false){const amount=Number($('#expenseAmount').value);if(!amount){showToast('Ingresa un monto.');return}const m={id:Date.now(),date:$('#expenseDate').value,category:pending?'Pendiente':$('#expenseCategory').value,description:$('#expenseNote').value||'Gasto registrado',eventId:pending?'':$('#expenseEvent').value,amount,currency:$('#expenseCurrency').value,method:$('#expenseMethod').value,status:pending?'Pendiente':'Completo',kind:'expense'};movements.push(m);shared.bank-=usd(m.amount,m.currency);if(m.eventId){const e=eventById(m.eventId);e.costReal+=usd(m.amount,m.currency);if(e.costReal>e.costEst*0.95 && e.quality==='Alta') e.quality='Media';}closeRegister();showToast(pending?'Guardado para clasificar después':'Gasto guardado');refreshCurrentView()}
@@ -612,13 +370,20 @@ function showToast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('s
 function bindDynamic(){$$('[data-jump]').forEach(el=>el.onclick=()=>navTo(el.dataset.jump));$$('[data-open-event]').forEach(el=>el.onclick=()=>openEvent(el.dataset.openEvent))}
 
 $$('[data-view]').forEach(b=>b.addEventListener('click',()=>navTo(b.dataset.view)));
-$('#registerBtn').onclick=()=>{$('#workspaceSelect').value==='personal'?openPersonalMovement():openRegister()};$('#mobileRegister').onclick=()=>{$('#workspaceSelect').value==='personal'?openPersonalMovement():openRegister()};$('#closeModal').onclick=closeRegister;$('#registerModal').addEventListener('click',e=>{if(e.target.id==='registerModal')closeRegister()});$('#expenseForm').addEventListener('submit',e=>{e.preventDefault();saveExpense(false)});$('#savePending').onclick=()=>saveExpense(true);
-$('#closeReceivableModal').onclick=closeReceivableModal; $('#receivableModal').addEventListener('click',e=>{if(e.target.id==='receivableModal')closeReceivableModal()}); $('#receivableForm').addEventListener('submit',e=>{e.preventDefault();saveReceivable(false)}); $('#savePendingReceivable').onclick=()=>saveReceivable(true); $('#receivableEvent').onchange=e=>populateReceivablePending(e.target.value);
-$('#closePersonalMovementModal').onclick=closePersonalMovement; $('#personalMovementModal').addEventListener('click',e=>{if(e.target.id==='personalMovementModal')closePersonalMovement()}); $('#personalMovementForm').addEventListener('submit',e=>{e.preventDefault();savePersonalMovement()}); $('#personalType').onchange=updatePersonalCategoryOptions;
+$('#registerBtn').onclick=()=>openRegister();
+$('#mobileRegister').onclick=()=>openRegister();
+$('#closeModal').onclick=closeRegister;
+$('#registerModal').addEventListener('click',e=>{if(e.target.id==='registerModal')closeRegister()});
+$('#expenseForm').addEventListener('submit',e=>{e.preventDefault();saveExpense(false)});
+$('#savePending').onclick=()=>saveExpense(true);
+$('#closeReceivableModal').onclick=closeReceivableModal;
+$('#receivableModal').addEventListener('click',e=>{if(e.target.id==='receivableModal')closeReceivableModal()});
+$('#receivableForm').addEventListener('submit',e=>{e.preventDefault();saveReceivable(false)});
+$('#savePendingReceivable').onclick=()=>saveReceivable(true);
+$('#receivableEvent').onchange=e=>populateReceivablePending(e.target.value);
 $('#currencySelect').onchange=e=>{displayCurrency=e.target.value;if(currentView==='eventDetail')renderEventDetail();else navTo(currentView)};
 $('#themeBtn').onclick=()=>{const dark=document.documentElement.dataset.theme==='dark';document.documentElement.dataset.theme=dark?'light':'dark';$('#themeBtn').textContent=dark?'Oscuro':'Claro';document.querySelector('meta[name="theme-color"]').content=dark?'#f7f7f5':'#191919'};
-$('#workspaceSelect').onchange=e=>setWorkspace(e.target.value); $$('#personalSidebarMenus [data-personal-section]').forEach(btn=>btn.onclick=()=>{personalSection=btn.dataset.personalSection;renderPersonal()});$('#mobileMore').onclick=()=>showToast('En móvil, “Más” abrirá Temporada, Cobros, Presupuesto y Configuración.');
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeRegister();closeReceivableModal();closePersonalMovement()}if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openRegister()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeRegister();closeReceivableModal()}if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openRegister()}});
 renderHome();
 </script>
 
