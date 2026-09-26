@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f7f7f5">
-<title>Rastro Custom · Stylos & Flores</title>
+<title>Rastro · Stylos & Flores</title>
 <style>
 :root{
   --bg:#f7f7f5;--sidebar:#fbfbfa;--surface:#fff;--surface2:#f4f4f2;--surface3:#ededeb;
@@ -25,9 +25,27 @@ html[data-theme="dark"]{
 </style>
 </head>
 <body>
-<div class="app">
+
+<div id="authGate" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg)">
+  <div class="card" style="width:min(430px,100%);padding:28px">
+    <div class="eyebrow">Rastro · Stylos &amp; Flores</div>
+    <h1 style="margin:0 0 6px;font-size:1.8rem;letter-spacing:-.04em">Iniciar sesión</h1>
+    <p style="margin:0 0 22px;color:var(--muted)">Accede con tu usuario autorizado de Rastro.</p>
+    <form id="loginForm">
+      <div class="field"><label>Correo</label><input id="loginEmail" type="email" autocomplete="email" required placeholder="tu@correo.com"></div>
+      <div class="field"><label>Contraseña</label><input id="loginPassword" type="password" autocomplete="current-password" required placeholder="••••••••"></div>
+      <div id="loginError" style="display:none;margin:0 0 12px;padding:9px 10px;border-radius:7px;background:color-mix(in srgb,var(--danger) 10%,var(--surface));color:var(--danger);font-size:.76rem"></div>
+      <button class="btn" id="loginBtn" type="submit" style="width:100%;padding:10px 12px">Entrar a Rastro</button>
+    </form>
+    <div style="margin-top:15px;padding-top:15px;border-top:1px solid var(--border);color:var(--muted);font-size:.7rem">
+      Acceso protegido por Supabase Auth + Row Level Security.
+    </div>
+  </div>
+</div>
+
+<div class="app" id="appShell" style="display:none">
   <aside class="sidebar">
-    <div class="brand"><strong>Rastro</strong><small>Custom · S&F</small></div>
+    <div class="brand"><strong>Rastro</strong><small>Stylos &amp; Flores</small></div>
     <div id="businessSidebarMenus">
       <div class="nav-label">Principal</div>
       <nav class="nav" id="desktopNav">
@@ -40,13 +58,21 @@ html[data-theme="dark"]{
       </nav>
     </div>
     <div class="sidebar-bottom">
-      <div class="managed-card"><strong>Prototipo V1</strong><span>Base demostrativa para Laura y Stylos &amp; Flores</span></div>
+      <div class="managed-card">
+        <strong>Integración V1</strong>
+        <span>Login y Eventos ya usan Supabase. Operación, Movimientos y Cobros siguen con datos demo mientras los migramos.</span>
+      </div>
+      <div class="managed-card" id="sessionCard">
+      <strong id="sessionBusiness">Conectando…</strong>
+      <span id="sessionUser">Supabase</span>
+      <button id="logoutBtn" type="button" style="margin-top:9px;width:100%;background:transparent;border:1px solid var(--border);border-radius:7px;padding:7px 9px;color:var(--text);font-weight:650">Cerrar sesión</button>
+    </div>
     </div>
   </aside>
 
   <main class="main">
     <header class="topbar">
-      <strong class="workspace-mini">Stylos & Flores</strong>
+      <strong class="workspace-mini" id="workspaceBusinessName">Stylos &amp; Flores</strong>
       <div class="spacer"></div>
       <select class="season-select" id="seasonSelect"><option>Temporada 2026/2027</option></select>
       <select class="currency-select" id="currencySelect"><option value="USD">$ USD</option><option value="CRC">₡ CRC</option></select>
@@ -126,9 +152,33 @@ html[data-theme="dark"]{
     </div>
   </div>
 </div>
+
+<div class="modal" id="eventModal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-head"><h2>Nuevo evento</h2><button class="icon-btn" id="closeEventModal">×</button></div>
+    <div class="modal-body">
+      <form id="eventForm">
+        <div class="form-grid">
+          <div class="field" style="grid-column:1/-1"><label>Nombre del evento</label><input id="newEventName" required placeholder="Ej. Thompson & Miller"></div>
+          <div class="field"><label>Fecha</label><input id="newEventDate" type="date" required></div>
+          <div class="field"><label>Estado</label><select id="newEventStatus"><option value="confirmed">Confirmado</option><option value="quote">Cotizando</option><option value="planning">Planificación</option><option value="purchasing">Compras</option></select></div>
+          <div class="field"><label>Lugar / venue</label><input id="newEventVenue" placeholder="Ej. Hacienda Pinilla"></div>
+          <div class="field"><label>Zona</label><input id="newEventLocation" placeholder="Ej. Guanacaste"></div>
+          <div class="field"><label>Moneda</label><select id="newEventCurrency"><option value="USD">USD $</option><option value="CRC">CRC ₡</option></select></div>
+          <div class="field"><label>Venta aprobada</label><input id="newEventAmount" type="number" min="0" step="0.01" placeholder="0"></div>
+        </div>
+        <div class="field"><label>Nota <span style="font-weight:400">(opcional)</span></label><textarea id="newEventNotes" placeholder="Información inicial del evento"></textarea></div>
+        <div id="eventSaveError" style="display:none;margin-bottom:10px;color:var(--danger);font-size:.75rem"></div>
+        <div class="modal-actions"><button type="button" class="btn secondary" id="cancelEventModal">Cancelar</button><button class="btn" id="saveEventBtn" type="submit">Guardar evento</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast">Movimiento guardado</div>
 
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const FX=520;
 const months=[
@@ -145,7 +195,7 @@ const months=[
  {key:'2027-09',label:'SEP',events:1,income:9000,cost:11200,balance:21100,off:true},
  {key:'2027-10',label:'OCT',events:1,income:12000,cost:12800,balance:19900,off:true}
 ];
-const events=[
+const demoEvents=[
  {id:'e1',name:'Thompson & Miller',date:'2027-03-14',place:'Hacienda Pinilla',planner:'Pacific Weddings',client:'Thompson & Miller',sale:17900,collected:11000,costEst:8700,costReal:7950,commercial:'Aprobado',operational:'Compras',financial:'Cobro parcial',quality:'Media'},
  {id:'e2',name:'Brown & García',date:'2027-03-18',place:'Tamarindo',planner:'Evergreen Weddings',client:'Brown & García',sale:14200,collected:7100,costEst:7200,costReal:4120,commercial:'Aprobado',operational:'Por iniciar',financial:'Cobro parcial',quality:'Alta'},
  {id:'e3',name:'Williams Wedding',date:'2027-03-22',place:'Las Catalinas',planner:'Pacific Weddings',client:'Williams',sale:22400,collected:16800,costEst:10900,costReal:8240,commercial:'Aprobado',operational:'Compras',financial:'Cobro parcial',quality:'Media'},
@@ -153,6 +203,8 @@ const events=[
  {id:'e5',name:'Roberts & Chen',date:'2027-04-09',place:'Andaz Peninsula Papagayo',planner:'Blue Mango Weddings',client:'Roberts & Chen',sale:26500,collected:13250,costEst:13200,costReal:4850,commercial:'Aprobado',operational:'Por iniciar',financial:'Cobro parcial',quality:'Media'},
  {id:'e6',name:'Martínez Dinner',date:'2027-04-17',place:'Casa Chameleon',planner:'Cliente final',client:'Martínez',sale:7800,collected:3900,costEst:3600,costReal:1020,commercial:'Aprobado',operational:'Por iniciar',financial:'Cobro parcial',quality:'Alta'}
 ];
+let databaseEvents=[];
+let events=[...demoEvents];
 let movements=[
  {id:1,date:'2027-03-02',category:'Flores',description:'Importación rosas y hortensias',eventId:'e1',amount:1620,currency:'USD',method:'Transferencia',status:'Completo',kind:'expense'},
  {id:2,date:'2027-03-03',category:'Gasolina',description:'Ruta de compras Guanacaste',eventId:'',amount:48500,currency:'CRC',method:'Tarjeta',status:'Pendiente',kind:'expense'},
@@ -197,7 +249,15 @@ let selectedEvent='e1';
 let currentView='home';
 let displayCurrency='USD';
 let eventDetailTab='summary';
+
 let currentReceivableContext={eventId:'',receivableId:''};
+
+const SUPABASE_URL='https://polmxyozgbvxdymkdmxh.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_p2UfbU8ZCMdRoCgLLg7ZHQ_vv4uVW6q';
+const sb=window.supabase?window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
+ auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+}):null;
+let dbContext={user:null,businessId:'',businessName:'Stylos & Flores',role:'',seasonId:'',seasonName:'Temporada 2026/2027'};
 
 const $=s=>document.querySelector(s); const $$=s=>[...document.querySelectorAll(s)];
 function usd(value,currency='USD'){return currency==='USD'?Number(value):Number(value)/FX}
@@ -251,7 +311,7 @@ function navTo(view){currentView=view;$$('.view').forEach(v=>v.classList.remove(
 
 function renderHome(){
  const available=operatingAvailable(); const next=[...events].sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4); const offPct=shared.offReserved/shared.offTarget*100; const maxBal=Math.max(...months.map(m=>m.balance));
- $('#view-home').innerHTML=header('Buenos días, Laura','Temporada 2026/2027 · Vista ejecutiva del negocio')+`
+ $('#view-home').innerHTML=header('Buenos días',`${dbContext.seasonName||'Temporada 2026/2027'} · Vista ejecutiva del negocio`)+`
  <div class="grid hero-grid">
   <div class="card hero-card">
    <div class="kpi-label">Disponible para operar hoy</div><div class="hero-value">${money(available)}</div><div class="hero-note">Saldo después de compromisos de eventos y reservas estratégicas.</div>
@@ -279,8 +339,8 @@ function renderSeason(monthKey=''){
  $('#view-season').innerHTML=header('Temporada 2026/2027','Noviembre 2026 — Junio 2027 · Off Season julio — octubre 2027','<button class="btn" id="newEventBtn">+ Evento</button>')+`
  <div class="grid season-summary">${kpi('Eventos confirmados','38')}${kpi('Valor contratado',money(shared.seasonContracted))}${kpi('Cobrado',money(seasonCollectedTotal()))}${kpi('Por cobrar',money(Math.max(0,shared.seasonContracted-seasonCollectedTotal())))}${kpi('Costos proyectados',money(shared.seasonCost))}${kpi('Margen bruto estimado',money(margin))}</div>
  <div class="card"><div class="section-title"><div><h2>Calendario financiero</h2><div class="kpi-sub">Selecciona un mes para filtrar su resumen y los eventos. Sin selección se muestra toda la temporada.</div></div>${selected?'<button class="btn secondary small" id="clearSeasonMonth">Ver toda la temporada</button>':''}</div><div class="month-strip">${months.map(m=>`<button class="month-pill ${selected&&m.key===selected.key?'active':''} ${m.off?'off':''}" data-month="${m.key}"><strong>${m.label}</strong><span>${m.events} evento${m.events===1?'':'s'}</span><span>${m.off?'Off Season':'Temporada'}</span></button>`).join('')}</div>${selected?`<div class="month-detail">${kpi('Eventos',selected.events)}${kpi('Ingresos esperados',money(selected.income))}${kpi('Costos estimados',money(selected.cost))}${kpi('Saldo proyectado',money(selected.balance))}</div>`:'<div class="kpi-sub" style="margin-top:12px">Selecciona un mes si quieres analizarlo de forma individual.</div>'}</div>
- <div class="card table-card" style="margin-top:14px"><div class="table-head"><div><strong>${selected?`Eventos · ${fullMonthLabel(selected.key)}`:'Eventos de toda la temporada'}</strong><div class="kpi-sub">${filteredEvents.length} evento${filteredEvents.length===1?'':'s'} en esta vista</div></div><button class="btn secondary small" data-jump="events">Abrir eventos</button></div><div class="table-wrap"><table><thead><tr><th>Evento</th><th>Fecha</th><th>Planner / contacto</th><th class="num">Venta</th><th class="num">Cobrado</th><th class="num">Costo estimado</th><th class="num">Resultado est.</th><th>Estado</th></tr></thead><tbody>${filteredEvents.map(e=>`<tr data-open-event="${e.id}" style="cursor:pointer"><td><strong>${e.name}</strong><br><small style="color:var(--muted)">${e.place}</small></td><td>${eventCardDate(e.date)}</td><td>${e.planner}</td><td class="num">${money(e.sale)}</td><td class="num">${money(e.collected)}</td><td class="num">${money(e.costEst)}</td><td class="num"><strong>${money(eventMargin(e))}</strong></td><td><span class="status ${statusClass(e.operational)}">${e.operational}</span></td></tr>`).join('')||'<tr><td colspan="8" class="kpi-sub">No hay eventos registrados para este mes.</td></tr>'}</tbody></table></div></div>`;
- $$('.month-pill').forEach(b=>b.onclick=()=>renderSeason(selected&&selected.key===b.dataset.month?'':b.dataset.month)); const clear=$('#clearSeasonMonth');if(clear)clear.onclick=()=>renderSeason(''); $('#newEventBtn').onclick=()=>showToast('Creación de eventos preparada para la siguiente iteración.');bindDynamic();
+ <div class="card table-card" style="margin-top:14px"><div class="table-head"><div><strong>${selected?`Eventos · ${fullMonthLabel(selected.key)}`:'Eventos de toda la temporada'}</strong><div class="kpi-sub">${filteredEvents.length} evento${filteredEvents.length===1?'':'s'} en esta vista</div></div><button class="btn secondary small" data-jump="events">Abrir eventos</button></div><div class="table-wrap"><table><thead><tr><th>Evento</th><th>Fecha</th><th>Planner / contacto</th><th class="num">Venta</th><th class="num">Cobrado</th><th class="num">Costo estimado</th><th class="num">Resultado est.</th><th>Estado</th></tr></thead><tbody>${filteredEvents.map(e=>`<tr data-open-event="${e.id}" style="cursor:pointer"><td><strong>${e.name}</strong>${e.source==='db'?' <span class="status blue" style="margin-left:5px">Real</span>':' <span class="status" style="margin-left:5px">Demo</span>'}<br><small style="color:var(--muted)">${e.place}</small></td><td>${eventCardDate(e.date)}</td><td>${e.planner}</td><td class="num">${money(e.sale)}</td><td class="num">${money(e.collected)}</td><td class="num">${money(e.costEst)}</td><td class="num"><strong>${money(eventMargin(e))}</strong></td><td><span class="status ${statusClass(e.operational)}">${e.operational}</span></td></tr>`).join('')||'<tr><td colspan="8" class="kpi-sub">No hay eventos registrados para este mes.</td></tr>'}</tbody></table></div></div>`;
+ $$('.month-pill').forEach(b=>b.onclick=()=>renderSeason(selected&&selected.key===b.dataset.month?'':b.dataset.month)); const clear=$('#clearSeasonMonth');if(clear)clear.onclick=()=>renderSeason(''); $('#newEventBtn').onclick=openEventModal;bindDynamic();
 }
 function renderOperation(){
  const totalBudget=operations.reduce((s,o)=>s+operationBudget(o),0), totalActual=operations.reduce((s,o)=>s+operationActual(o),0);
@@ -293,8 +353,8 @@ function renderOperation(){
  $$('[data-operation-expense]').forEach(btn=>{btn.onclick=()=>{const op=operationById(btn.dataset.operationExpense),g=op?.groups.find(x=>x.id===btn.dataset.group);openRegister('',{operationId:op?.id||'',groupId:g?.id||'',eventIds:g?.eventIds||[]})}});bindDynamic();
 }
 function renderEvents(){
- $('#view-events').innerHTML=header('Eventos','Economía individual de cada boda y evento','<button class="btn" id="eventAdd">+ Evento</button>')+`<div class="toolbar"><select id="eventViewFilter"><option>Próximos</option><option>Todos</option><option>Cerrados</option></select><select id="eventPlannerFilter"><option>Todos los planners</option><option>Pacific Weddings</option><option>Evergreen Weddings</option></select><input id="eventSearch" placeholder="Buscar evento..." style="min-width:220px"></div><div class="event-cards">${events.map(e=>`<article class="card event-card" data-open-event="${e.id}"><div class="event-card-top"><div><div class="eyebrow">${eventCardDate(e.date)}</div><h3>${e.name}</h3><div class="place">${e.place}</div></div><span class="status ${statusClass(e.operational)}" style="align-self:flex-start;width:auto;max-width:max-content;flex:0 0 auto">${e.operational}</span></div><div class="event-card-stats"><div><label>Venta</label><strong>${money(e.sale)}</strong></div><div><label>Cobrado</label><strong>${pct(e.collected/e.sale*100)}</strong></div><div><label>Margen est.</label><strong>${pct(eventMargin(e)/e.sale*100)}</strong></div></div></article>`).join('')}</div>`;
- $('#eventAdd').onclick=()=>showToast('Creación de eventos preparada para la siguiente iteración.');bindDynamic();
+ $('#view-events').innerHTML=header('Eventos','Economía individual de cada boda y evento','<button class="btn" id="eventAdd">+ Evento</button>')+`<div class="toolbar"><select id="eventViewFilter"><option>Próximos</option><option>Todos</option><option>Cerrados</option></select><select id="eventPlannerFilter"><option>Todos los planners</option><option>Pacific Weddings</option><option>Evergreen Weddings</option></select><input id="eventSearch" placeholder="Buscar evento..." style="min-width:220px"></div><div class="event-cards">${events.map(e=>`<article class="card event-card" data-open-event="${e.id}"><div class="event-card-top"><div><div class="eyebrow">${eventCardDate(e.date)}${e.source==='db'?' · REAL':' · DEMO'}</div><h3>${e.name}</h3><div class="place">${e.place}</div></div><span class="status ${statusClass(e.operational)}" style="align-self:flex-start;width:auto;max-width:max-content;flex:0 0 auto">${e.operational}</span></div><div class="event-card-stats"><div><label>Venta</label><strong>${money(e.sale)}</strong></div><div><label>Cobrado</label><strong>${e.sale>0?pct(e.collected/e.sale*100):'—'}</strong></div><div><label>Margen est.</label><strong>${e.costEst>0&&e.sale>0?pct(eventMargin(e)/e.sale*100):'—'}</strong></div></div></article>`).join('')}</div>`;
+ $('#eventAdd').onclick=openEventModal;bindDynamic();
 }
 function openEvent(id,tab='summary'){selectedEvent=id;eventDetailTab=tab;navTo('eventDetail')}
 function eventTabButton(key,label){return `<button class="tab ${eventDetailTab===key?'active':''}" data-event-tab="${key}">${label}</button>`}
@@ -323,6 +383,7 @@ function renderEventFilesTab(e){
 }
 function renderEventDetail(){
  const e=eventById(selectedEvent)||events[0];
+ if(!e){$('#view-eventDetail').innerHTML=header('Evento','No hay eventos disponibles');return}
  const contentMap={summary:renderEventSummaryTab,cobros:renderEventCobrosTab,gastos:renderEventGastosTab,presupuesto:renderEventBudgetTab,archivos:renderEventFilesTab};
  $('#view-eventDetail').innerHTML=`<div class="event-detail-top"><button id="backEvents">←</button><span class="kpi-sub">Eventos / ${e.name}</span></div>`+header(e.name,`${dateLabel(e.date)} · ${e.place}`,'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn secondary" id="addReceivableFromHeader">+ Cobro</button><button class="btn" id="addEventExpense">+ Gasto</button></div>')+`
  <div class="grid state-grid">${['Comercial|'+e.commercial,'Operativo|'+e.operational,'Financiero|'+e.financial].map(x=>{const [a,b]=x.split('|');return `<div class="card state-card"><span>Estado ${a.toLowerCase()}</span><strong class="status ${statusClass(b)}">${b}</strong></div>`}).join('')}</div>
@@ -454,6 +515,131 @@ function createExpectedReceivable(eventId){
  receivables.push({id:'r'+Date.now(), eventId:e.id, concept:'Nueva cuota', amount:remaining, due:new Date().toISOString().slice(0,10), status:'Pendiente'});
  updateEventFinancialStatus(e); showToast('Se agregó una cuota esperada de cobro.'); renderEventDetail();
 }
+
+function dbStatusToUi(status){
+ const map={quote:['Cotizando','Por iniciar'],confirmed:['Aprobado','Por iniciar'],planning:['Aprobado','Planificación'],purchasing:['Aprobado','Compras'],completed:['Aprobado','Finalizado'],cancelled:['Cancelado','Cancelado']};
+ return map[status]||['Aprobado','Por iniciar'];
+}
+function dbEventToUi(row){
+ const state=dbStatusToUi(row.status);
+ const raw=Number(row.contracted_amount||0);
+ const sale=row.currency==='CRC'?usd(raw,'CRC'):raw;
+ return {
+  id:row.id,name:row.name,date:row.event_date,place:row.venue||row.location||'Lugar por definir',
+  planner:'—',client:row.name,sale,collected:0,costEst:0,costReal:0,
+  commercial:state[0],operational:state[1],financial:'Sin cobros',quality:'Inicial',
+  source:'db',dbCurrency:row.currency||'USD',dbAmount:raw,notes:row.notes||''
+ };
+}
+async function loadDatabaseEvents(){
+ if(!dbContext.businessId)return;
+ const {data,error}=await sb.from('events').select('*').eq('business_id',dbContext.businessId).order('event_date',{ascending:true});
+ if(error)throw error;
+ databaseEvents=(data||[]).map(dbEventToUi);
+ events=[...databaseEvents,...demoEvents];
+ if(databaseEvents.length)selectedEvent=databaseEvents[0].id;
+}
+async function loadBusinessContext(){
+ const {data:membership,error:membershipError}=await sb.from('business_users').select('business_id,role').limit(1).maybeSingle();
+ if(membershipError)throw membershipError;
+ if(!membership)throw new Error('Tu usuario existe, pero todavía no tiene acceso a ningún negocio en Rastro.');
+ dbContext.businessId=membership.business_id;dbContext.role=membership.role;
+
+ const {data:business,error:businessError}=await sb.from('businesses').select('id,name').eq('id',membership.business_id).single();
+ if(businessError)throw businessError;
+ dbContext.businessName=business.name;
+
+ const {data:season,error:seasonError}=await sb.from('seasons').select('id,name').eq('business_id',membership.business_id).eq('status','active').order('start_date',{ascending:false}).limit(1).maybeSingle();
+ if(seasonError)throw seasonError;
+ if(season){dbContext.seasonId=season.id;dbContext.seasonName=season.name;}
+
+ await loadDatabaseEvents();
+ $('#workspaceBusinessName').textContent=dbContext.businessName;
+ $('#sessionBusiness').textContent=dbContext.businessName;
+ $('#sessionUser').textContent=`${dbContext.user?.email||'Usuario'} · ${dbContext.role}`;
+ $('#seasonSelect').innerHTML=`<option>${dbContext.seasonName}</option>`;
+}
+function showAuthGate(message=''){
+ $('#appShell').style.display='none';$('#authGate').style.display='flex';
+ const err=$('#loginError');err.style.display=message?'block':'none';err.textContent=message||'';
+}
+function showAppShell(){
+ $('#authGate').style.display='none';$('#appShell').style.display='block';
+}
+async function enterApp(session){
+ try{
+  dbContext.user=session.user;
+  showAppShell();
+  $('#sessionBusiness').textContent='Cargando…';
+  $('#sessionUser').textContent=session.user.email||'Usuario';
+  await loadBusinessContext();
+  renderHome();
+ }catch(err){
+  console.error(err);
+  await sb.auth.signOut();
+  showAuthGate(`No pudimos cargar Rastro: ${err.message}`);
+ }
+}
+async function initializeSupabaseApp(){
+ if(!sb){showAuthGate('No se pudo cargar la librería de Supabase. Revisa tu conexión a internet.');return}
+ const {data,error}=await sb.auth.getSession();
+ if(error){showAuthGate(error.message);return}
+ if(data.session)await enterApp(data.session);else showAuthGate();
+}
+async function handleLogin(e){
+ e.preventDefault();
+ const email=$('#loginEmail').value.trim(),password=$('#loginPassword').value;
+ const btn=$('#loginBtn'),err=$('#loginError');
+ btn.disabled=true;btn.textContent='Ingresando…';err.style.display='none';
+ const {data,error}=await sb.auth.signInWithPassword({email,password});
+ btn.disabled=false;btn.textContent='Entrar a Rastro';
+ if(error){err.textContent='Correo o contraseña incorrectos, o el usuario aún no está confirmado.';err.style.display='block';return}
+ await enterApp(data.session);
+}
+async function handleLogout(){
+ await sb.auth.signOut();
+ dbContext={user:null,businessId:'',businessName:'Stylos & Flores',role:'',seasonId:'',seasonName:'Temporada 2026/2027'};
+ databaseEvents=[];events=[...demoEvents];
+ showAuthGate();
+}
+function openEventModal(){
+ if(!dbContext.businessId){showToast('Primero debes iniciar sesión.');return}
+ $('#newEventName').value='';$('#newEventDate').value='';$('#newEventVenue').value='';$('#newEventLocation').value='';
+ $('#newEventAmount').value='';$('#newEventCurrency').value='USD';$('#newEventStatus').value='confirmed';$('#newEventNotes').value='';
+ $('#eventSaveError').style.display='none';
+ $('#eventModal').classList.add('open');$('#eventModal').setAttribute('aria-hidden','false');
+ setTimeout(()=>$('#newEventName').focus(),60);
+}
+function closeEventModal(){
+ $('#eventModal').classList.remove('open');$('#eventModal').setAttribute('aria-hidden','true');
+}
+async function saveNewEvent(e){
+ e.preventDefault();
+ const btn=$('#saveEventBtn'),err=$('#eventSaveError');
+ const payload={
+  business_id:dbContext.businessId,
+  season_id:dbContext.seasonId||null,
+  name:$('#newEventName').value.trim(),
+  event_date:$('#newEventDate').value,
+  venue:$('#newEventVenue').value.trim()||null,
+  location:$('#newEventLocation').value.trim()||null,
+  status:$('#newEventStatus').value,
+  contracted_amount:Number($('#newEventAmount').value||0),
+  currency:$('#newEventCurrency').value,
+  notes:$('#newEventNotes').value.trim()||null
+ };
+ if(!payload.name||!payload.event_date){err.textContent='Nombre y fecha son obligatorios.';err.style.display='block';return}
+ btn.disabled=true;btn.textContent='Guardando…';err.style.display='none';
+ const {data,error}=await sb.from('events').insert(payload).select().single();
+ btn.disabled=false;btn.textContent='Guardar evento';
+ if(error){console.error(error);err.textContent=`No se pudo guardar: ${error.message}`;err.style.display='block';return}
+ databaseEvents.push(dbEventToUi(data));databaseEvents.sort((a,b)=>a.date.localeCompare(b.date));
+ events=[...databaseEvents,...demoEvents];
+ selectedEvent=data.id;
+ closeEventModal();showToast('Evento guardado en Supabase');
+ navTo('events');
+}
+
 function refreshCurrentView(){
  if(currentView==='eventDetail') renderEventDetail();
  else navTo(currentView);
@@ -462,6 +648,12 @@ function showToast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('s
 function bindDynamic(){$$('[data-jump]').forEach(el=>el.onclick=()=>navTo(el.dataset.jump));$$('[data-open-event]').forEach(el=>el.onclick=()=>openEvent(el.dataset.openEvent))}
 
 $$('[data-view]').forEach(b=>b.addEventListener('click',()=>navTo(b.dataset.view)));
+$('#loginForm').addEventListener('submit',handleLogin);
+$('#logoutBtn').onclick=handleLogout;
+$('#eventForm').addEventListener('submit',saveNewEvent);
+$('#closeEventModal').onclick=closeEventModal;
+$('#cancelEventModal').onclick=closeEventModal;
+$('#eventModal').addEventListener('click',e=>{if(e.target.id==='eventModal')closeEventModal()});
 $('#registerBtn').onclick=()=>openRegister();
 $('#mobileRegister').onclick=()=>openRegister();
 $('#closeModal').onclick=closeRegister;
@@ -476,8 +668,8 @@ $('#savePendingReceivable').onclick=()=>saveReceivable(true);
 $('#receivableEvent').onchange=e=>populateReceivablePending(e.target.value);
 $('#currencySelect').onchange=e=>{displayCurrency=e.target.value;if(currentView==='eventDetail')renderEventDetail();else navTo(currentView)};
 $('#themeBtn').onclick=()=>{const dark=document.documentElement.dataset.theme==='dark';document.documentElement.dataset.theme=dark?'light':'dark';$('#themeBtn').textContent=dark?'Oscuro':'Claro';document.querySelector('meta[name="theme-color"]').content=dark?'#f7f7f5':'#191919'};
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeRegister();closeReceivableModal()}if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openRegister()}});
-renderHome();
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeRegister();closeReceivableModal();closeEventModal()}if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openRegister()}});
+initializeSupabaseApp();
 </script>
 
 </body>
